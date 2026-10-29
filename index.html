@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -101,11 +102,8 @@ canvas {
   touch-action: manipulation;
 }
 
-.fullscreen-hud {
-  display: none;
-}
+.fullscreen-hud { display: none; }
 
-/* Somente a área do jogo entra em tela cheia. */
 .game-stage:fullscreen {
   width: 100vw;
   height: 100vh;
@@ -229,6 +227,7 @@ canvas {
 }
 
 .score-card .highlight { color: var(--gold); }
+.score-card .coin-highlight { color: #ffd166; }
 
 .controls {
   display: flex;
@@ -312,7 +311,7 @@ input {
 
 input:focus { outline: 2px solid var(--cyan); }
 
-#ranking {
+#ranking, #coinRanking {
   list-style: none;
   padding: 0;
   max-width: 600px;
@@ -320,7 +319,7 @@ input:focus { outline: 2px solid var(--cyan); }
   text-align: left;
 }
 
-#ranking li {
+#ranking li, #coinRanking li {
   display: flex;
   align-items: center;
   gap: 15px;
@@ -332,7 +331,10 @@ input:focus { outline: 2px solid var(--cyan); }
   font-weight: 800;
 }
 
-#ranking li:first-child { border-color: var(--gold); }
+#ranking li:first-child,
+#coinRanking li:first-child {
+  border-color: var(--gold);
+}
 
 .rank-number { color: var(--gold); min-width: 30px; }
 .rank-name { flex: 1; overflow-wrap: anywhere; }
@@ -383,8 +385,12 @@ footer strong { color: var(--cyan); }
       <canvas id="game" width="960" height="400"
               aria-label="Jogo Joey Runner"></canvas>
     </div>
+
     <div class="fullscreen-hud">
-      <div class="hud-score">PONTOS <strong id="fullScore">00000</strong></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <div class="hud-score">PONTOS <strong id="fullScore">00000</strong></div>
+        <div class="hud-score">🪙 MOEDAS <strong id="fullCoins">00</strong></div>
+      </div>
       <button id="exitFullscreen" type="button" aria-label="Sair da tela cheia">SAIR ✕</button>
     </div>
   </div>
@@ -394,35 +400,59 @@ footer strong { color: var(--cyan); }
       <small>PONTUAÇÃO</small>
       <strong id="score">00000</strong>
     </div>
+
     <div class="score-card">
       <small>RECORDE LOCAL</small>
       <strong id="best" class="highlight">00000</strong>
+    </div>
+
+    <div class="score-card">
+      <small>🪙 MOEDAS NA PARTIDA</small>
+      <strong id="coins" class="coin-highlight">00</strong>
+    </div>
+
+    <div class="score-card">
+      <small>RECORDE DE MOEDAS</small>
+      <strong id="bestCoins" class="coin-highlight">00</strong>
     </div>
   </div>
 
   <div class="controls">
     <button id="start">▶ COMEÇAR</button>
     <button id="jump" class="jump-button">PULAR ↑</button>
-    <button id="fullscreenBtn" class="fullscreen-button" type="button">⛶ TELA CHEIA</button>
+    <button id="fullscreenBtn" class="fullscreen-button"
+            type="button">⛶ TELA CHEIA</button>
   </div>
 
   <p class="help">
     Use ESPAÇO, ↑, W ou toque na tela para pular.
-    Desvie das caixas, cones, mochilas, livros e materiais escolares!
+    Desvie das caixas, cones, mochilas, livros e materiais escolares.
+    Colete as moedas douradas pelo caminho!
   </p>
 
   <hr class="divider">
 
   <section class="ranking-section">
-    <h2>🏆 Ranking dos participantes</h2>
+    <h2>🏆 Ranking de pontuação</h2>
+
     <div class="ranking-form">
       <input id="player" maxlength="18"
              placeholder="Seu nome ou apelido"
              aria-label="Seu nome ou apelido">
-      <button id="save" disabled>Salvar pontuação</button>
+      <button id="save" disabled>Salvar resultados</button>
     </div>
+
     <ol id="ranking"></ol>
-    <p id="message">Seu recorde fica salvo neste navegador.</p>
+
+    <h2 style="margin-top:32px">🪙 Ranking de moedas</h2>
+    <p class="help" style="margin:0 0 12px">
+      Vale o maior número de moedas coletadas em uma única partida.
+    </p>
+    <ol id="coinRanking"></ol>
+
+    <p id="message">
+      Seus recordes e rankings ficam salvos neste navegador.
+    </p>
   </section>
 </main>
 
@@ -454,7 +484,6 @@ footer strong { color: var(--cyan); }
   const CAT_X = 115;
   const STEP = 1000 / 60;
 
-  // Ajustes principais de dificuldade.
   const START_SPEED = 6.5;
   const MAX_SPEED = 10.5;
   const ACCELERATION = 0.0007;
@@ -463,6 +492,9 @@ footer strong { color: var(--cyan); }
 
   const scoreText = $('score');
   const fullScoreText = $('fullScore');
+  const fullCoinsText = $('fullCoins');
+  const coinsText = $('coins');
+  const bestCoinsText = $('bestCoins');
   const bestText = $('best');
   const startButton = $('start');
   const jumpButton = $('jump');
@@ -471,9 +503,10 @@ footer strong { color: var(--cyan); }
   const saveButton = $('save');
   const playerInput = $('player');
   const rankingList = $('ranking');
+  const coinRankingList = $('coinRanking');
   const message = $('message');
 
-  // Imagens opcionais do repositório.
+  // Mantém o arquivo de fundo atual.
   const bgImg = new Image();
   let bgLoaded = false;
 
@@ -510,11 +543,9 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  function readRanking() {
+  function readSavedScores(key) {
     try {
-      const data = JSON.parse(
-        localStorage.getItem('joeyRanking') || '[]'
-      );
+      const data = JSON.parse(localStorage.getItem(key) || '[]');
 
       return Array.isArray(data)
         ? data.filter(v =>
@@ -529,15 +560,23 @@ footer strong { color: var(--cyan); }
   }
 
   let best = readNumber('joeyBest');
+  let bestCoins = readNumber('joeyBestCoins');
+
   bestText.textContent = fmt(best);
+  bestCoinsText.textContent = String(bestCoins).padStart(2, '0');
+  coinsText.textContent = '00';
+  fullCoinsText.textContent = '00';
 
   let running = false;
   let ended = false;
   let frame = 0;
   let score = 0;
+  let coinsCollected = 0;
   let speed = START_SPEED;
   let distanceToNext = 370;
   let obstacles = [];
+  let coins = [];
+  let coinDistanceToNext = 260;
   let clouds = [];
   let birds = [];
   let floorOffset = 0;
@@ -574,8 +613,7 @@ footer strong { color: var(--cyan); }
     ctx.fillText(str, x, y);
   }
 
-  // CENÁRIO
-
+  // CENÁRIO: mantido sem alterações.
   function drawBackground() {
     rect(0, 0, W, H, '#62c4f3');
 
@@ -655,8 +693,7 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // JOEY: personagem desenhado em pixel art.
-
+  // PERSONAGEM JOEY EM PIXEL ART.
   function drawJoey() {
     const x = Math.round(cat.x);
     const y = Math.round(cat.y);
@@ -667,25 +704,21 @@ footer strong { color: var(--cyan); }
     rect(x - 3, GROUND - 2, 49, 5, '#0f1721');
     ctx.globalAlpha = 1;
 
-    // Cauda.
     rect(x - 5, y + 47, 10, 8, '#c97a30');
     rect(x - 12, y + 39, 10, 10, '#f5a340');
     rect(x - 14, y + 31, 8, 10, '#f5a340');
     rect(x - 11, y + 33, 5, 4, '#9c542b');
 
-    // Orelhas.
     rect(x + 2, y + 2, 12, 16, '#d88a39');
     rect(x + 29, y + 2, 12, 16, '#d88a39');
     rect(x + 5, y + 6, 6, 9, '#f7b2a0');
     rect(x + 32, y + 6, 6, 9, '#f7b2a0');
 
-    // Cabeça e bochechas.
     rect(x + 3, y + 12, 38, 33, '#f5a340');
     rect(x + 7, y + 8, 30, 34, '#ffba58');
     rect(x + 3, y + 25, 5, 12, '#d88a39');
     rect(x + 36, y + 25, 5, 12, '#d88a39');
 
-    // Olhos verdes.
     rect(x + 8, y + 19, 12, 13, '#ffffff');
     rect(x + 25, y + 19, 12, 13, '#ffffff');
     rect(x + 12, y + 21, 7, 9, '#12a344');
@@ -695,13 +728,11 @@ footer strong { color: var(--cyan); }
     rect(x + 12, y + 21, 3, 3, '#ffffff');
     rect(x + 27, y + 21, 3, 3, '#ffffff');
 
-    // Focinho e boca.
     rect(x + 12, y + 32, 19, 9, '#ffe2b0');
     rect(x + 18, y + 30, 8, 5, '#804b38');
     rect(x + 17, y + 37, 11, 4, '#713d35');
     rect(x + 20, y + 38, 5, 2, '#ffffff');
 
-    // Camiseta da escola.
     rect(x + 8, y + 44, 29, 21, '#f7f7ef');
     rect(x + 8, y + 44, 29, 4, '#168bd0');
     rect(x + 8, y + 49, 4, 13, '#188bd0');
@@ -709,7 +740,6 @@ footer strong { color: var(--cyan); }
     rect(x + 19, y + 50, 8, 6, '#152749');
     rect(x + 21, y + 50, 4, 4, '#35d8cc');
 
-    // Braços alternados.
     if (pose === 0) {
       rect(x + 1, y + 47, 8, 12, '#f5a340');
       rect(x - 1, y + 57, 9, 6, '#ffba58');
@@ -722,13 +752,11 @@ footer strong { color: var(--cyan); }
       rect(x + 37, y + 43, 7, 6, '#ffba58');
     }
 
-    // Shorts.
     rect(x + 10, y + 63, 26, 13, '#1479c6');
     rect(x + 10, y + 65, 12, 10, '#168bdc');
     rect(x + 24, y + 65, 12, 10, '#168bdc');
     rect(x + 21, y + 64, 4, 8, '#ffffff');
 
-    // Pernas e tênis.
     if (airborne) {
       rect(x + 12, y + 73, 7, 4, '#d88a39');
       rect(x + 27, y + 72, 7, 5, '#d88a39');
@@ -753,36 +781,31 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // OBSTÁCULOS
-
+  // OBSTÁCULOS.
   function drawObstacle(o) {
     ctx.globalAlpha = 0.25;
     rect(o.x - 2, GROUND - 3, o.w + 4, 5, '#0f1721');
     ctx.globalAlpha = 1;
 
     if (o.type === 0) {
-      // Caixa de papelão.
       rect(o.x, o.y, o.w, o.h, '#8a5c36');
       rect(o.x + 3, o.y + 3, o.w - 6, o.h - 6, '#b07c4a');
       rect(o.x + 3, o.y + o.h / 2, o.w - 6, 3, '#734a29');
       rect(o.x + o.w / 2 - 2, o.y + 3, 4, o.h - 6, '#d7a66a');
 
     } else if (o.type === 1) {
-      // Cone de trânsito.
       rect(o.x + o.w / 2 - 3, o.y, 6, 5, '#ffdf72');
       rect(o.x + 5, o.y + 5, o.w - 10, o.h - 10, '#f6a32c');
       rect(o.x + 8, o.y + 15, o.w - 16, 5, '#ffffff');
       rect(o.x, o.y + o.h - 6, o.w, 6, '#d86e27');
 
     } else if (o.type === 2) {
-      // Mochila.
       rect(o.x + 3, o.y + 8, o.w - 6, o.h - 8, '#e94d78');
       rect(o.x + 7, o.y + 12, o.w - 14, o.h - 18, '#ff7da0');
       rect(o.x + 7, o.y + 3, o.w - 14, 8, '#f6a3bc');
       rect(o.x + o.w / 2 - 3, o.y + 17, 6, 7, '#ffd166');
 
     } else if (o.type === 3) {
-      // Livros empilhados.
       rect(o.x, o.y + 15, o.w, 10, '#2478bd');
       rect(o.x + 3, o.y + 17, o.w - 6, 3, '#d7efff');
       rect(o.x + 4, o.y + 5, o.w - 4, 10, '#e94d78');
@@ -790,14 +813,12 @@ footer strong { color: var(--cyan); }
       rect(o.x + 2, o.y, o.w - 5, 5, '#ffcf59');
 
     } else if (o.type === 4) {
-      // Lixeira escolar.
       rect(o.x + 3, o.y + 6, o.w - 6, o.h - 6, '#4b90d2');
       rect(o.x, o.y + 4, o.w, 5, '#9cd8ff');
       rect(o.x + 6, o.y + 13, 3, o.h - 17, '#bcefff');
       rect(o.x + o.w - 9, o.y + 13, 3, o.h - 17, '#bcefff');
 
     } else {
-      // Pilha de cadernos.
       rect(o.x, o.y + 17, o.w, o.h - 17, '#32a88d');
       rect(o.x + 3, o.y + 20, o.w - 6, 3, '#c5fff0');
       rect(o.x + 3, o.y + 5, o.w - 6, 13, '#7359bc');
@@ -806,7 +827,56 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // INTERFACE DENTRO DO JOGO
+  // MOEDAS DOURADAS EM PIXEL ART.
+  function drawCoin(coin) {
+    const x = Math.round(coin.x);
+    const y = Math.round(coin.y);
+    const bob = Math.round(Math.sin((frame + coin.phase) / 7) * 2);
+    const cy = y + bob;
+
+    rect(x - 9, cy - 12, 18, 24, '#8b4b0e');
+    rect(x - 12, cy - 8, 24, 16, '#8b4b0e');
+    rect(x - 7, cy - 12, 14, 24, '#ffb51b');
+    rect(x - 10, cy - 7, 20, 14, '#ffcf33');
+    rect(x - 5, cy - 9, 10, 18, '#ffe875');
+    rect(x - 7, cy - 7, 14, 14, '#f9a916');
+    rect(x - 5, cy - 8, 3, 5, '#fff6b0');
+    rect(x - 2, cy - 5, 4, 10, '#d9820b');
+    rect(x + 2, cy + 3, 3, 4, '#ffe875');
+  }
+
+  function coinTouchesPlayer(coin) {
+    const left = cat.x + 7;
+    const right = cat.x + cat.w - 5;
+    const top = cat.y + 10;
+    const bottom = cat.y + cat.h - 5;
+    const radius = 10;
+
+    const nearestX = Math.max(left, Math.min(coin.x, right));
+    const nearestY = Math.max(top, Math.min(coin.y, bottom));
+    const dx = coin.x - nearestX;
+    const dy = coin.y - nearestY;
+
+    return dx * dx + dy * dy <= radius * radius;
+  }
+
+  function spawnCoins() {
+    const amount =
+      Math.random() < 0.38 ? 3 : (Math.random() < 0.55 ? 2 : 1);
+
+    const y = randomBetween(190, 258);
+    const startX = W + 30;
+
+    for (let i = 0; i < amount; i++) {
+      coins.push({
+        x: startX + i * 34,
+        y: y + (amount === 3 && i === 1 ? -12 : 0),
+        phase: Math.floor(Math.random() * 30)
+      });
+    }
+
+    coinDistanceToNext = randomBetween(300, 520);
+  }
 
   function drawOverlay(title, subtitle) {
     ctx.fillStyle = 'rgba(11, 17, 32, .78)';
@@ -831,6 +901,10 @@ footer strong { color: var(--cyan); }
       drawObstacle(obstacle);
     }
 
+    for (const coin of coins) {
+      drawCoin(coin);
+    }
+
     drawJoey();
 
     if (!running && !ended) {
@@ -842,16 +916,12 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // FÍSICA DO PULO
-
   function jump() {
     if (!running || !cat.onGround) return;
 
     cat.vy = JUMP_FORCE;
     cat.onGround = false;
   }
-
-  // OBSTÁCULOS E DISTÂNCIAS
 
   function randomBetween(min, max) {
     return min + Math.random() * (max - min);
@@ -934,13 +1004,14 @@ footer strong { color: var(--cyan); }
     );
   }
 
-  // INICIAR OU REINICIAR A PARTIDA
-
   function start() {
     running = true;
     ended = false;
     frame = 0;
     score = 0;
+    coinsCollected = 0;
+    coins = [];
+    coinDistanceToNext = 260;
     speed = START_SPEED;
     floorOffset = 0;
     distanceToNext = 370;
@@ -966,12 +1037,12 @@ footer strong { color: var(--cyan); }
     startButton.textContent = '↻ REINICIAR';
     scoreText.textContent = fmt(0);
     fullScoreText.textContent = fmt(0);
-    message.textContent = 'Boa sorte! Desvie dos obstáculos.';
+    coinsText.textContent = '00';
+    fullCoinsText.textContent = '00';
+    message.textContent = 'Boa sorte! Desvie dos obstáculos e colete moedas.';
 
     render();
   }
-
-  // FIM DA PARTIDA
 
   function finish() {
     if (!running) return;
@@ -985,14 +1056,20 @@ footer strong { color: var(--cyan); }
     }
 
     bestText.textContent = fmt(best);
+
+    if (coinsCollected > bestCoins) {
+      bestCoins = coinsCollected;
+      saveLocal('joeyBestCoins', String(bestCoins));
+    }
+
+    bestCoinsText.textContent = String(bestCoins).padStart(2, '0');
+
     saveButton.disabled = false;
     message.textContent =
-      'Digite seu nome para registrar esta pontuação.';
+      'Digite seu nome para registrar sua pontuação e seu resultado de moedas.';
 
     render();
   }
-
-  // ATUALIZAÇÃO DA FÍSICA
 
   function update() {
     if (!running) return;
@@ -1011,9 +1088,7 @@ footer strong { color: var(--cyan); }
     for (const c of clouds) {
       c.x -= c.speed;
 
-      if (c.x < -100) {
-        c.x = W + 30;
-      }
+      if (c.x < -100) c.x = W + 30;
     }
 
     if (Math.random() < 0.012 && birds.length < 5) {
@@ -1043,15 +1118,30 @@ footer strong { color: var(--cyan); }
 
     distanceToNext -= speed;
 
-    if (distanceToNext <= 0) {
-      spawnObstacle();
-    }
+    if (distanceToNext <= 0) spawnObstacle();
 
-    for (const o of obstacles) {
-      o.x -= speed;
-    }
+    for (const o of obstacles) o.x -= speed;
 
     obstacles = obstacles.filter(o => o.x + o.w > -40);
+
+    // Moedas surgem em grupos e se movem junto com o cenário.
+    coinDistanceToNext -= speed;
+
+    if (coinDistanceToNext <= 0) spawnCoins();
+
+    for (const coin of coins) coin.x -= speed;
+
+    // Cada moeda coletada vale uma unidade.
+    coins = coins.filter(coin => {
+      if (coinTouchesPlayer(coin)) {
+        coinsCollected++;
+        coinsText.textContent = String(coinsCollected).padStart(2, '0');
+        fullCoinsText.textContent = String(coinsCollected).padStart(2, '0');
+        return false;
+      }
+
+      return coin.x > -25;
+    });
 
     for (const obstacle of obstacles) {
       if (intersects(cat, obstacle)) {
@@ -1062,14 +1152,12 @@ footer strong { color: var(--cyan); }
 
     scoreText.textContent = fmt(score);
     fullScoreText.textContent = fmt(score);
+    coinsText.textContent = String(coinsCollected).padStart(2, '0');
+    fullCoinsText.textContent = String(coinsCollected).padStart(2, '0');
   }
 
-  // LOOP DE ANIMAÇÃO
-
   function loop(timestamp) {
-    if (!lastTime) {
-      lastTime = timestamp;
-    }
+    if (!lastTime) lastTime = timestamp;
 
     const delta = Math.min(timestamp - lastTime, 50);
     lastTime = timestamp;
@@ -1094,21 +1182,20 @@ footer strong { color: var(--cyan); }
     animationId = requestAnimationFrame(loop);
   }
 
-  // RANKING LOCAL
-
-  function showRanking() {
-    const scores = readRanking()
+  // Exibe os dez melhores resultados de cada categoria.
+  function renderRanking(listElement, storageKey, emptyText, isCoinRanking = false) {
+    const scores = readSavedScores(storageKey)
       .sort((a, b) => Number(b.score) - Number(a.score))
       .slice(0, 10);
 
-    rankingList.replaceChildren();
+    listElement.replaceChildren();
 
     if (!scores.length) {
       const li = document.createElement('li');
-      li.textContent = 'Seja o primeiro a entrar no ranking!';
+      li.textContent = emptyText;
       li.style.justifyContent = 'center';
       li.style.color = '#ffd166';
-      rankingList.appendChild(li);
+      listElement.appendChild(li);
       return;
     }
 
@@ -1126,11 +1213,28 @@ footer strong { color: var(--cyan); }
 
       const points = document.createElement('span');
       points.className = 'rank-score';
-      points.textContent = fmt(Number(item.score));
+      points.textContent = isCoinRanking
+        ? '🪙 ' + Number(item.score)
+        : fmt(Number(item.score));
 
       li.append(rank, name, points);
-      rankingList.appendChild(li);
+      listElement.appendChild(li);
     });
+  }
+
+  function showRankings() {
+    renderRanking(
+      rankingList,
+      'joeyRanking',
+      'Seja o primeiro a entrar no ranking!'
+    );
+
+    renderRanking(
+      coinRankingList,
+      'joeyCoinRanking',
+      'Colete moedas para aparecer neste ranking!',
+      true
+    );
   }
 
   saveButton.addEventListener('click', () => {
@@ -1145,31 +1249,49 @@ footer strong { color: var(--cyan); }
       return;
     }
 
-    const scores = readRanking();
-    scores.push({ name, score });
-    scores.sort((a, b) => Number(b.score) - Number(a.score));
+    // Ranking de pontuação.
+    const distanceScores = readSavedScores('joeyRanking');
+    distanceScores.push({ name, score });
+    distanceScores.sort((a, b) => Number(b.score) - Number(a.score));
 
-    if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50)))) {
+    if (!saveLocal(
+      'joeyRanking',
+      JSON.stringify(distanceScores.slice(0, 50))
+    )) {
       message.textContent =
         'Não foi possível salvar no armazenamento deste navegador.';
       return;
     }
 
+    // Ranking de moedas: registra o total desta partida.
+    if (coinsCollected > 0) {
+      const coinScores = readSavedScores('joeyCoinRanking');
+      coinScores.push({ name, score: coinsCollected });
+      coinScores.sort((a, b) => Number(b.score) - Number(a.score));
+
+      if (!saveLocal(
+        'joeyCoinRanking',
+        JSON.stringify(coinScores.slice(0, 50))
+      )) {
+        message.textContent =
+          'A pontuação foi salva, mas não foi possível salvar o ranking de moedas.';
+        return;
+      }
+    }
+
     gameOverSaved = true;
     saveButton.disabled = true;
-    showRanking();
+    showRankings();
 
-    message.textContent =
-      'Pontuação registrada neste navegador!';
+    message.textContent = coinsCollected > 0
+      ? 'Pontuação e resultado de moedas registrados neste navegador!'
+      : 'Pontuação registrada! Você não coletou moedas nesta partida.';
   });
 
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
 
-  // CLIQUE OU TOQUE NA ÁREA DO JOGO:
-  // - antes de começar: inicia;
-  // - durante a partida: pula;
-  // - depois de perder: reinicia imediatamente.
+  // Clique ou toque no jogo: começa, pula ou reinicia após perder.
   canvas.addEventListener('pointerdown', event => {
     event.preventDefault();
 
@@ -1180,7 +1302,6 @@ footer strong { color: var(--cyan); }
     }
   });
 
-  // CONTROLES DO TECLADO
   window.addEventListener('keydown', event => {
     if (
       event.code === 'Space' ||
@@ -1204,8 +1325,6 @@ footer strong { color: var(--cyan); }
     }
   });
 
-  // TELA CHEIA SOMENTE PARA O JOGO
-
   async function enterGameFullscreen() {
     try {
       if (document.fullscreenElement === gameStage) {
@@ -1221,13 +1340,10 @@ footer strong { color: var(--cyan); }
 
       await gameStage.requestFullscreen();
 
-      // O bloqueio de orientação depende do navegador e do dispositivo.
       if (screen.orientation && screen.orientation.lock) {
         try {
           await screen.orientation.lock('landscape');
-        } catch (_) {
-          // Alguns navegadores não permitem bloquear a orientação.
-        }
+        } catch (_) {}
       }
     } catch (_) {
       message.textContent =
@@ -1241,9 +1357,7 @@ footer strong { color: var(--cyan); }
     if (document.fullscreenElement) {
       try {
         await document.exitFullscreen();
-      } catch (_) {
-        // O navegador pode impedir a saída programática.
-      }
+      } catch (_) {}
     }
 
     if (screen.orientation && screen.orientation.unlock) {
@@ -1265,15 +1379,8 @@ footer strong { color: var(--cyan); }
     accumulator = 0;
   });
 
-  // INICIALIZAÇÃO
-
-  showRanking();
+  showRankings();
   render();
-
-  if (animationId) {
-    cancelAnimationFrame(animationId);
-  }
-
   animationId = requestAnimationFrame(loop);
 })();
 </script>
