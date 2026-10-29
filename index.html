@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -295,8 +296,8 @@ footer strong { color: var(--cyan); }
   </div>
 
   <p class="help">
-    Use ESPAÇO, ↑, W ou toque no jogo para pular.
-    Desvie das caixas, cones, mochilas e materiais escolares!
+    Use ESPAÇO, ↑, W ou toque na tela para pular.
+    Desvie das caixas, cones, mochilas, livros e materiais escolares!
   </p>
 
   <hr class="divider">
@@ -323,11 +324,31 @@ footer strong { color: var(--cyan); }
 (() => {
   'use strict';
 
-  const canvas = document.getElementById('game');
+  const $ = id => document.getElementById(id);
+  const canvas = $('game');
   const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    $('message').textContent =
+      'Não foi possível iniciar o jogo neste navegador.';
+    return;
+  }
+
   ctx.imageSmoothingEnabled = false;
 
-  const $ = id => document.getElementById(id);
+  const W = 960;
+  const H = 400;
+  const GROUND = 310;
+  const CAT_X = 115;
+  const STEP = 1000 / 60;
+
+  // Ajustes principais de dificuldade.
+  const START_SPEED = 6.5;
+  const MAX_SPEED = 10.5;
+  const ACCELERATION = 0.0007;
+  const GRAVITY = 0.58;
+  const JUMP_FORCE = -11.5;
+
   const scoreText = $('score');
   const bestText = $('best');
   const startButton = $('start');
@@ -337,17 +358,11 @@ footer strong { color: var(--cyan); }
   const rankingList = $('ranking');
   const message = $('message');
 
-  const W = 960;
-  const H = 400;
-  const GROUND = 310;
-  const CAT_X = 115;
-  const STEP = 1000 / 60;
-
-  // A imagem deve existir na raiz do repositório.
+  // Imagens opcionais do repositório.
+  // Se o cenário não existir ou falhar, o jogo usa o desenho alternativo.
   const bgImg = new Image();
-  bgImg.src = 'escola-fundo.png';
-
   let bgLoaded = false;
+
   bgImg.onload = () => {
     bgLoaded = true;
     render();
@@ -358,19 +373,7 @@ footer strong { color: var(--cyan); }
     render();
   };
 
-  let running = false;
-  let ended = false;
-  let frame = 0;
-  let score = 0;
-  let speed = 8;
-  let distanceToNext = 430;
-  let obstacles = [];
-  let clouds = [];
-  let birds = [];
-  let floorOffset = 0;
-  let lastTime = 0;
-  let accumulator = 0;
-  let gameOverSaved = false;
+  bgImg.src = 'escola-fundo.png';
 
   function fmt(n) {
     return String(Math.floor(n)).padStart(5, '0');
@@ -384,20 +387,6 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  function readRanking() {
-    try {
-      const data = JSON.parse(localStorage.getItem('joeyRanking') || '[]');
-      return Array.isArray(data)
-        ? data.filter(v =>
-            v &&
-            typeof v.name === 'string' &&
-            Number.isFinite(Number(v.score)))
-        : [];
-    } catch (_) {
-      return [];
-    }
-  }
-
   function saveLocal(key, value) {
     try {
       localStorage.setItem(key, value);
@@ -407,15 +396,48 @@ footer strong { color: var(--cyan); }
     }
   }
 
+  function readRanking() {
+    try {
+      const data = JSON.parse(
+        localStorage.getItem('joeyRanking') || '[]'
+      );
+
+      return Array.isArray(data)
+        ? data.filter(v =>
+            v &&
+            typeof v.name === 'string' &&
+            Number.isFinite(Number(v.score))
+          )
+        : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
   let best = readNumber('joeyBest');
   bestText.textContent = fmt(best);
 
+  let running = false;
+  let ended = false;
+  let frame = 0;
+  let score = 0;
+  let speed = START_SPEED;
+  let distanceToNext = 370;
+  let obstacles = [];
+  let clouds = [];
+  let birds = [];
+  let floorOffset = 0;
+  let lastTime = 0;
+  let accumulator = 0;
+  let gameOverSaved = false;
+  let animationId = 0;
+
   const cat = {
     x: CAT_X,
-    y: GROUND - 76,
+    y: GROUND - 82,
     vy: 0,
     w: 44,
-    h: 76,
+    h: 82,
     onGround: true,
     runFrame: 0
   };
@@ -434,30 +456,30 @@ footer strong { color: var(--cyan); }
     ctx.fillStyle = color;
     ctx.font = `900 ${size}px Nunito, sans-serif`;
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
     ctx.fillText(str, x, y);
   }
 
-  // Cenário: imagem da escola ou um céu alternativo.
+  // CENÁRIO
+
   function drawBackground() {
     rect(0, 0, W, H, '#62c4f3');
 
-    if (bgLoaded) {
-      // A escola fica mais afastada, no plano de fundo.
-      ctx.drawImage(bgImg, 0, 0, W, GROUND + 20);
+    if (bgLoaded && bgImg.naturalWidth > 0) {
+      // Mantém a escola afastada e reservada ao plano de fundo.
+      ctx.drawImage(bgImg, 0, 0, W, GROUND + 18);
     } else {
       drawFallbackSchool();
     }
 
-    // Nuvens independentes, animadas e em pixel art.
     for (const c of clouds) {
       drawCloud(c.x, c.y);
     }
   }
 
   function drawFallbackSchool() {
-    rect(0, 0, W, 220, '#2689dc');
+    rect(0, 0, W, 225, '#2689dc');
 
-    // Nuvens estáticas de reserva.
     drawCloud(100, 70);
     drawCloud(390, 45);
     drawCloud(710, 90);
@@ -470,13 +492,11 @@ footer strong { color: var(--cyan); }
     rect(145, 135, 670, 9, '#ffad43');
     rect(155, 245, 650, 8, '#23405d');
 
-    // Janelas da escola.
     for (let x = 195; x < 770; x += 48) {
       rect(x, 175, 25, 34, '#52c8ef');
       rect(x + 3, 178, 19, 28, '#bcefff');
     }
 
-    // Árvores pixeladas.
     drawTree(100, 240);
     drawTree(850, 240);
     drawTree(650, 240);
@@ -517,18 +537,20 @@ footer strong { color: var(--cyan); }
     for (let i = 0; i < 15; i++) {
       const x =
         ((i * 120 - floorOffset) % 1200 + 1200) % 1200 - 100;
+
       rect(x, GROUND + 40, 50, 6, '#8e9eab');
     }
   }
 
-  // Joey desenhado em pixel art: nenhuma foto é usada.
+  // JOEY: personagem desenhado, sem depender de uma fotografia.
+
   function drawJoey() {
     const x = Math.round(cat.x);
     const y = Math.round(cat.y);
     const airborne = !cat.onGround;
     const pose = airborne ? 2 : Math.floor(cat.runFrame / 5) % 2;
 
-    // Sombra.
+    // Sombra acompanha o salto.
     ctx.globalAlpha = airborne ? 0.15 : 0.35;
     rect(x - 3, GROUND - 2, 49, 5, '#0f1721');
     ctx.globalAlpha = 1;
@@ -551,7 +573,7 @@ footer strong { color: var(--cyan); }
     rect(x + 3, y + 25, 5, 12, '#d88a39');
     rect(x + 36, y + 25, 5, 12, '#d88a39');
 
-    // Olhos verdes grandes.
+    // Olhos verdes.
     rect(x + 8, y + 19, 12, 13, '#ffffff');
     rect(x + 25, y + 19, 12, 13, '#ffffff');
     rect(x + 12, y + 21, 7, 9, '#12a344');
@@ -567,7 +589,7 @@ footer strong { color: var(--cyan); }
     rect(x + 17, y + 37, 11, 4, '#713d35');
     rect(x + 20, y + 38, 5, 2, '#ffffff');
 
-    // Camiseta branca e detalhes azuis.
+    // Camiseta da escola.
     rect(x + 8, y + 44, 29, 21, '#f7f7ef');
     rect(x + 8, y + 44, 29, 4, '#168bd0');
     rect(x + 8, y + 49, 4, 13, '#188bd0');
@@ -594,7 +616,7 @@ footer strong { color: var(--cyan); }
     rect(x + 24, y + 65, 12, 10, '#168bdc');
     rect(x + 21, y + 64, 4, 8, '#ffffff');
 
-    // Pernas e tênis: três poses, inclusive durante o salto.
+    // Pernas e tênis animados.
     if (airborne) {
       rect(x + 12, y + 73, 7, 4, '#d88a39');
       rect(x + 27, y + 72, 7, 5, '#d88a39');
@@ -619,6 +641,8 @@ footer strong { color: var(--cyan); }
     }
   }
 
+  // OBSTÁCULOS
+
   function drawObstacle(o) {
     ctx.globalAlpha = 0.25;
     rect(o.x - 2, GROUND - 3, o.w + 4, 5, '#0f1721');
@@ -639,28 +663,38 @@ footer strong { color: var(--cyan); }
       rect(o.x, o.y + o.h - 6, o.w, 6, '#d86e27');
 
     } else if (o.type === 2) {
-      // Mochila escolar.
+      // Mochila.
       rect(o.x + 3, o.y + 8, o.w - 6, o.h - 8, '#e94d78');
       rect(o.x + 7, o.y + 12, o.w - 14, o.h - 18, '#ff7da0');
       rect(o.x + 7, o.y + 3, o.w - 14, 8, '#f6a3bc');
       rect(o.x + o.w / 2 - 3, o.y + 17, 6, 7, '#ffd166');
 
     } else if (o.type === 3) {
-      // Pilha de livros.
+      // Livros empilhados.
       rect(o.x, o.y + 15, o.w, 10, '#2478bd');
       rect(o.x + 3, o.y + 17, o.w - 6, 3, '#d7efff');
       rect(o.x + 4, o.y + 5, o.w - 4, 10, '#e94d78');
       rect(o.x + 7, o.y + 7, o.w - 10, 3, '#ffe6a8');
       rect(o.x + 2, o.y, o.w - 5, 5, '#ffcf59');
 
-    } else {
+    } else if (o.type === 4) {
       // Lixeira escolar.
       rect(o.x + 3, o.y + 6, o.w - 6, o.h - 6, '#4b90d2');
       rect(o.x, o.y + 4, o.w, 5, '#9cd8ff');
       rect(o.x + 6, o.y + 13, 3, o.h - 17, '#bcefff');
       rect(o.x + o.w - 9, o.y + 13, 3, o.h - 17, '#bcefff');
+
+    } else {
+      // Pilha de cadernos.
+      rect(o.x, o.y + 17, o.w, o.h - 17, '#32a88d');
+      rect(o.x + 3, o.y + 20, o.w - 6, 3, '#c5fff0');
+      rect(o.x + 3, o.y + 5, o.w - 6, 13, '#7359bc');
+      rect(o.x + 7, o.y + 8, o.w - 14, 3, '#cfc4ff');
+      rect(o.x + 5, o.y, o.w - 10, 5, '#ffcf59');
     }
   }
+
+  // INTERFACE DENTRO DO JOGO
 
   function drawOverlay(title, subtitle) {
     ctx.fillStyle = 'rgba(11, 17, 32, .78)';
@@ -675,8 +709,8 @@ footer strong { color: var(--cyan); }
   }
 
   function render() {
-    // Cada quadro redesenha tudo, evitando rastros.
     ctx.clearRect(0, 0, W, H);
+
     drawBackground();
     drawBirds();
     drawTrack();
@@ -696,28 +730,126 @@ footer strong { color: var(--cyan); }
     }
   }
 
+  // FÍSICA DO PULO
+
   function jump() {
     if (!running || !cat.onGround) return;
 
-    cat.vy = -14.2;
+    cat.vy = JUMP_FORCE;
     cat.onGround = false;
   }
+
+  // DISTÂNCIAS E COMBINAÇÕES DE OBSTÁCULOS
+
+  function randomBetween(min, max) {
+    return min + Math.random() * (max - min);
+  }
+
+  const obstacleTypes = [
+    { type: 0, w: 28, h: 31 },
+    { type: 0, w: 40, h: 42 },
+    { type: 1, w: 26, h: 31 },
+    { type: 1, w: 36, h: 43 },
+    { type: 2, w: 32, h: 37 },
+    { type: 2, w: 40, h: 45 },
+    { type: 3, w: 43, h: 27 },
+    { type: 4, w: 30, h: 35 },
+    { type: 5, w: 37, h: 30 }
+  ];
+
+  function createObstacle(x, spec) {
+    return {
+      x,
+      y: GROUND - spec.h,
+      w: spec.w,
+      h: spec.h,
+      type: spec.type
+    };
+  }
+
+  function spawnObstacle() {
+    const first =
+      obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+
+    obstacles.push(createObstacle(W + 25, first));
+
+    const progress = Math.min(1, frame / 6000);
+
+    // Intervalos entre grupos: variados, mas progressivamente menores.
+    const minGap = 330 - progress * 65;
+    const maxGap = 470 - progress * 65;
+
+    distanceToNext = randomBetween(minGap, maxGap);
+
+    // Pares aparecem ocasionalmente.
+    // A distância permite que um salto bem cronometrado passe pelos dois.
+    if (frame > 350 && Math.random() < 0.32) {
+      const second =
+        obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+
+      const pairGap = randomBetween(75, 115);
+
+      obstacles.push(createObstacle(W + 25 + first.w + pairGap, second));
+
+      // Evita que o grupo seguinte surja logo após o segundo obstáculo.
+      distanceToNext += first.w + pairGap;
+    }
+
+    // Grupos de três são raros e só aparecem depois de algum progresso.
+    if (frame > 2400 && Math.random() < 0.09) {
+      const third =
+        obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+
+      const thirdGap = randomBetween(70, 105);
+      const last = obstacles[obstacles.length - 1];
+
+      obstacles.push(
+        createObstacle(last.x + last.w + thirdGap, third)
+      );
+
+      distanceToNext += last.w + thirdGap;
+    }
+  }
+
+  function intersects(a, b) {
+    // Área de colisão reduzida para não penalizar detalhes do desenho.
+    const ax = a.x + 9;
+    const ay = a.y + 15;
+    const aw = a.w - 16;
+    const ah = a.h - 17;
+
+    const bx = b.x + 4;
+    const by = b.y + 3;
+    const bw = Math.max(1, b.w - 8);
+    const bh = Math.max(1, b.h - 4);
+
+    return (
+      ax < bx + bw &&
+      ax + aw > bx &&
+      ay < by + bh &&
+      ay + ah > by
+    );
+  }
+
+  // REINICIAR PARTIDA
 
   function start() {
     running = true;
     ended = false;
     frame = 0;
     score = 0;
-    speed = 8;
+    speed = START_SPEED;
     floorOffset = 0;
-    distanceToNext = 430;
+    distanceToNext = 370;
     obstacles = [];
     birds = [];
+
     clouds = [
-      { x: 70, y: 45, speed: 0.35 },
-      { x: 420, y: 75, speed: 0.25 },
-      { x: 760, y: 35, speed: 0.30 }
+      { x: 70, y: 45, speed: 0.45 },
+      { x: 420, y: 75, speed: 0.30 },
+      { x: 760, y: 35, speed: 0.38 }
     ];
+
     accumulator = 0;
     lastTime = 0;
     gameOverSaved = false;
@@ -735,6 +867,8 @@ footer strong { color: var(--cyan); }
     render();
   }
 
+  // ENCERRAR PARTIDA
+
   function finish() {
     if (!running) return;
 
@@ -748,75 +882,13 @@ footer strong { color: var(--cyan); }
 
     bestText.textContent = fmt(best);
     saveButton.disabled = false;
-    message.textContent = 'Digite seu nome para registrar esta pontuação.';
+    message.textContent =
+      'Digite seu nome para registrar esta pontuação.';
+
     render();
   }
 
-  function spawnObstacle() {
-    // Obstáculos de tamanhos diferentes.
-    const types = [
-      { w: 30, h: 34, type: 0 },
-      { w: 27, h: 39, type: 1 },
-      { w: 34, h: 37, type: 2 },
-      { w: 39, h: 28, type: 3 },
-      { w: 31, h: 36, type: 4 }
-    ];
-
-    const spec = types[Math.floor(Math.random() * types.length)];
-
-    obstacles.push({
-      x: W + 20,
-      y: GROUND - spec.h,
-      w: spec.w,
-      h: spec.h,
-      type: spec.type
-    });
-
-    // Intervalos diminuem moderadamente com a progressão.
-    const difficulty = Math.min(1, frame / 6000);
-    const minGap = 285 - difficulty * 65;
-    const maxGap = 430 - difficulty * 65;
-
-    distanceToNext = minGap + Math.random() * (maxGap - minGap);
-
-    // Ocasionalmente, dois obstáculos próximos.
-    // A distância continua suficiente para permitir reação.
-    if (frame > 1000 && Math.random() < 0.23) {
-      const second = types[Math.floor(Math.random() * types.length)];
-      const gap = 115 + Math.random() * 35;
-
-      obstacles.push({
-        x: W + 20 + gap,
-        y: GROUND - second.h,
-        w: second.w,
-        h: second.h,
-        type: second.type
-      });
-
-      distanceToNext += gap;
-    }
-  }
-
-  function intersects(a, b) {
-    // Caixa de colisão menor que o desenho visual:
-    // evita colisões injustas com orelhas, cauda e tênis.
-    const ax = a.x + 7;
-    const ay = a.y + 12;
-    const aw = a.w - 12;
-    const ah = a.h - 15;
-
-    const bx = b.x + 4;
-    const by = b.y + 3;
-    const bw = b.w - 8;
-    const bh = b.h - 4;
-
-    return (
-      ax < bx + bw &&
-      ax + aw > bx &&
-      ay < by + bh &&
-      ay + ah > by
-    );
-  }
+  // ATUALIZAÇÃO DA FÍSICA
 
   function update() {
     if (!running) return;
@@ -824,8 +896,11 @@ footer strong { color: var(--cyan); }
     frame++;
     cat.runFrame++;
 
-    // Começa um pouco mais rápido e acelera gradualmente.
-    speed = Math.min(13, 8 + frame * 0.0035);
+    // Começa moderadamente e acelera de forma gradual.
+    speed = Math.min(
+      MAX_SPEED,
+      START_SPEED + frame * ACCELERATION
+    );
 
     floorOffset = (floorOffset + speed) % 1200;
     score = Math.floor(frame / 4);
@@ -833,10 +908,13 @@ footer strong { color: var(--cyan); }
     // Nuvens em movimento independente.
     for (const c of clouds) {
       c.x -= c.speed;
-      if (c.x < -100) c.x = W + 30;
+
+      if (c.x < -100) {
+        c.x = W + 30;
+      }
     }
 
-    // Pássaros aparecem ocasionalmente e batem as asas.
+    // Pássaros aparecem ocasionalmente.
     if (Math.random() < 0.012 && birds.length < 5) {
       birds.push({
         x: W + 15,
@@ -853,8 +931,8 @@ footer strong { color: var(--cyan); }
 
     birds = birds.filter(b => b.x > -25);
 
-    // Física do salto.
-    cat.vy += 0.65;
+    // Gravidade e movimento vertical.
+    cat.vy += GRAVITY;
     cat.y += cat.vy;
 
     if (cat.y >= GROUND - cat.h) {
@@ -863,34 +941,38 @@ footer strong { color: var(--cyan); }
       cat.onGround = true;
     }
 
+    // Criação e deslocamento dos obstáculos.
     distanceToNext -= speed;
 
     if (distanceToNext <= 0) {
       spawnObstacle();
     }
 
-    // Atualiza todos os obstáculos.
     for (const o of obstacles) {
       o.x -= speed;
     }
 
     obstacles = obstacles.filter(o => o.x + o.w > -40);
 
-    // Encerra apenas uma vez quando há colisão.
+    // Verifica colisões e para a atualização imediatamente.
     for (const obstacle of obstacles) {
       if (intersects(cat, obstacle)) {
         finish();
-        break;
+        return;
       }
     }
 
     scoreText.textContent = fmt(score);
   }
 
-  function loop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
+  // LOOP CONTROLADO PARA EVITAR TRAVAMENTOS
 
-    // Evita saltos grandes de tempo quando a aba perde foco.
+  function loop(timestamp) {
+    if (!lastTime) {
+      lastTime = timestamp;
+    }
+
+    // Não acumula um salto enorme de tempo se a aba ficar inativa.
     const delta = Math.min(timestamp - lastTime, 50);
     lastTime = timestamp;
 
@@ -901,7 +983,6 @@ footer strong { color: var(--cyan); }
         update();
         accumulator -= STEP;
 
-        // Se acabou o jogo, não continuar atualizando a física.
         if (!running) {
           accumulator = 0;
           break;
@@ -912,8 +993,10 @@ footer strong { color: var(--cyan); }
     }
 
     render();
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   }
+
+  // RANKING LOCAL
 
   function showRanking() {
     const scores = readRanking()
@@ -933,9 +1016,11 @@ footer strong { color: var(--cyan); }
 
     scores.forEach((item, index) => {
       const li = document.createElement('li');
+
       const rank = document.createElement('span');
       rank.className = 'rank-number';
-      rank.textContent = ['🥇', '🥈', '🥉'][index] || (index + 1) + '.';
+      rank.textContent =
+        ['🥇', '🥈', '🥉'][index] || (index + 1) + '.';
 
       const name = document.createElement('span');
       name.className = 'rank-name';
@@ -956,33 +1041,40 @@ footer strong { color: var(--cyan); }
     const name = playerInput.value.trim().slice(0, 18);
 
     if (!name) {
-      message.textContent = 'Digite seu nome ou apelido antes de salvar.';
+      message.textContent =
+        'Digite seu nome ou apelido antes de salvar.';
       playerInput.focus();
       return;
     }
 
     const scores = readRanking();
     scores.push({ name, score });
+
     scores.sort((a, b) => Number(b.score) - Number(a.score));
 
-    if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50)))) {
+    if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50))) ) {
       message.textContent =
-        'Não foi possível salvar. Verifique o armazenamento do navegador.';
+        'Não foi possível salvar no armazenamento deste navegador.';
       return;
     }
 
     gameOverSaved = true;
     saveButton.disabled = true;
     showRanking();
-    message.textContent = 'Pontuação registrada neste navegador!';
+
+    message.textContent =
+      'Pontuação registrada neste navegador!';
   });
 
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
 
   canvas.addEventListener('pointerdown', () => {
-    if (!running && !ended) start();
-    else jump();
+    if (!running && !ended) {
+      start();
+    } else {
+      jump();
+    }
   });
 
   window.addEventListener('keydown', event => {
@@ -994,16 +1086,20 @@ footer strong { color: var(--cyan); }
       if (
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement
-      ) return;
+      ) {
+        return;
+      }
 
       event.preventDefault();
 
-      if (!running && !ended) start();
-      else jump();
+      if (!running && !ended) {
+        start();
+      } else {
+        jump();
+      }
     }
   });
 
-  // Evita que a partida avance muito ao voltar para a aba.
   document.addEventListener('visibilitychange', () => {
     lastTime = 0;
     accumulator = 0;
@@ -1011,7 +1107,13 @@ footer strong { color: var(--cyan); }
 
   showRanking();
   render();
-  requestAnimationFrame(loop);
+
+  // Garante apenas um loop de animação.
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+
+  animationId = requestAnimationFrame(loop);
 })();
 </script>
 </body>
