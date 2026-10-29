@@ -79,8 +79,6 @@ main {
   box-shadow: 0 20px 50px rgba(0,0,0,.4);
 }
 
-/* ÁREA DO JOGO */
-
 .game-stage {
   position: relative;
   width: 100%;
@@ -107,14 +105,10 @@ canvas {
   display: none;
 }
 
-/* Somente o jogo ocupa a tela cheia. */
+/* Somente a área do jogo entra em tela cheia. */
 .game-stage:fullscreen {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
   width: 100vw;
   height: 100vh;
-  height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -144,7 +138,6 @@ canvas {
   object-fit: contain;
 }
 
-/* Pontuação e botão para sair, visíveis somente em tela cheia. */
 .game-stage:fullscreen .fullscreen-hud {
   position: absolute;
   z-index: 5;
@@ -184,7 +177,6 @@ canvas {
   pointer-events: auto;
 }
 
-/* Se o aparelho continuar na vertical, mostra uma orientação. */
 @media (orientation: portrait) {
   .game-stage:fullscreen::after {
     content: 'Gire o celular para a posição horizontal';
@@ -203,8 +195,6 @@ canvas {
     font-weight: 800;
   }
 }
-
-/* PONTUAÇÃO */
 
 .scores {
   display: flex;
@@ -239,8 +229,6 @@ canvas {
 }
 
 .score-card .highlight { color: var(--gold); }
-
-/* BOTÕES */
 
 .controls {
   display: flex;
@@ -298,8 +286,6 @@ button:disabled {
   border-top: 1px solid #2a3a5c;
   margin: 35px 0;
 }
-
-/* RANKING */
 
 .ranking-section h2 {
   font-size: clamp(22px, 3vw, 28px);
@@ -397,13 +383,9 @@ footer strong { color: var(--cyan); }
       <canvas id="game" width="960" height="400"
               aria-label="Jogo Joey Runner"></canvas>
     </div>
-
     <div class="fullscreen-hud">
-      <div class="hud-score">
-        PONTOS <strong id="fullScore">00000</strong>
-      </div>
-      <button id="exitFullscreen" type="button"
-              aria-label="Sair da tela cheia">SAIR ✕</button>
+      <div class="hud-score">PONTOS <strong id="fullScore">00000</strong></div>
+      <button id="exitFullscreen" type="button" aria-label="Sair da tela cheia">SAIR ✕</button>
     </div>
   </div>
 
@@ -421,9 +403,7 @@ footer strong { color: var(--cyan); }
   <div class="controls">
     <button id="start">▶ COMEÇAR</button>
     <button id="jump" class="jump-button">PULAR ↑</button>
-    <button id="fullscreenBtn" class="fullscreen-button" type="button">
-      ⛶ TELA CHEIA
-    </button>
+    <button id="fullscreenBtn" class="fullscreen-button" type="button">⛶ TELA CHEIA</button>
   </div>
 
   <p class="help">
@@ -494,7 +474,6 @@ footer strong { color: var(--cyan); }
   const message = $('message');
 
   // Imagens opcionais do repositório.
-  // Se o cenário não existir ou falhar, o jogo usa o desenho alternativo.
   const bgImg = new Image();
   let bgLoaded = false;
 
@@ -684,7 +663,6 @@ footer strong { color: var(--cyan); }
     const airborne = !cat.onGround;
     const pose = airborne ? 2 : Math.floor(cat.runFrame / 5) % 2;
 
-    // Sombra acompanha o salto.
     ctx.globalAlpha = airborne ? 0.15 : 0.35;
     rect(x - 3, GROUND - 2, 49, 5, '#0f1721');
     ctx.globalAlpha = 1;
@@ -750,7 +728,7 @@ footer strong { color: var(--cyan); }
     rect(x + 24, y + 65, 12, 10, '#168bdc');
     rect(x + 21, y + 64, 4, 8, '#ffffff');
 
-    // Pernas e tênis animados.
+    // Pernas e tênis.
     if (airborne) {
       rect(x + 12, y + 73, 7, 4, '#d88a39');
       rect(x + 27, y + 72, 7, 5, '#d88a39');
@@ -873,7 +851,7 @@ footer strong { color: var(--cyan); }
     cat.onGround = false;
   }
 
-  // DISTÂNCIAS E COMBINAÇÕES DE OBSTÁCULOS
+  // OBSTÁCULOS E DISTÂNCIAS
 
   function randomBetween(min, max) {
     return min + Math.random() * (max - min);
@@ -908,26 +886,20 @@ footer strong { color: var(--cyan); }
     obstacles.push(createObstacle(W + 25, first));
 
     const progress = Math.min(1, frame / 6000);
-
-    // Intervalos entre grupos: variados, mas progressivamente menores.
     const minGap = 330 - progress * 65;
     const maxGap = 470 - progress * 65;
 
     distanceToNext = randomBetween(minGap, maxGap);
 
-    // Pares aparecem ocasionalmente.
     if (frame > 350 && Math.random() < 0.32) {
       const second =
         obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
 
       const pairGap = randomBetween(75, 115);
-
       obstacles.push(createObstacle(W + 25 + first.w + pairGap, second));
-
       distanceToNext += first.w + pairGap;
     }
 
-    // Grupos de três são raros e só aparecem depois de algum progresso.
     if (frame > 2400 && Math.random() < 0.09) {
       const third =
         obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
@@ -944,7 +916,6 @@ footer strong { color: var(--cyan); }
   }
 
   function intersects(a, b) {
-    // Área de colisão reduzida para não penalizar detalhes do desenho.
     const ax = a.x + 9;
     const ay = a.y + 15;
     const aw = a.w - 16;
@@ -963,7 +934,7 @@ footer strong { color: var(--cyan); }
     );
   }
 
-  // REINICIAR PARTIDA
+  // INICIAR OU REINICIAR A PARTIDA
 
   function start() {
     running = true;
@@ -1000,7 +971,7 @@ footer strong { color: var(--cyan); }
     render();
   }
 
-  // ENCERRAR PARTIDA
+  // FIM DA PARTIDA
 
   function finish() {
     if (!running) return;
@@ -1029,7 +1000,6 @@ footer strong { color: var(--cyan); }
     frame++;
     cat.runFrame++;
 
-    // Começa moderadamente e acelera de forma gradual.
     speed = Math.min(
       MAX_SPEED,
       START_SPEED + frame * ACCELERATION
@@ -1038,7 +1008,6 @@ footer strong { color: var(--cyan); }
     floorOffset = (floorOffset + speed) % 1200;
     score = Math.floor(frame / 4);
 
-    // Nuvens em movimento independente.
     for (const c of clouds) {
       c.x -= c.speed;
 
@@ -1047,7 +1016,6 @@ footer strong { color: var(--cyan); }
       }
     }
 
-    // Pássaros aparecem ocasionalmente.
     if (Math.random() < 0.012 && birds.length < 5) {
       birds.push({
         x: W + 15,
@@ -1064,7 +1032,6 @@ footer strong { color: var(--cyan); }
 
     birds = birds.filter(b => b.x > -25);
 
-    // Gravidade e movimento vertical.
     cat.vy += GRAVITY;
     cat.y += cat.vy;
 
@@ -1074,7 +1041,6 @@ footer strong { color: var(--cyan); }
       cat.onGround = true;
     }
 
-    // Criação e deslocamento dos obstáculos.
     distanceToNext -= speed;
 
     if (distanceToNext <= 0) {
@@ -1087,7 +1053,6 @@ footer strong { color: var(--cyan); }
 
     obstacles = obstacles.filter(o => o.x + o.w > -40);
 
-    // Verifica colisões e para a atualização imediatamente.
     for (const obstacle of obstacles) {
       if (intersects(cat, obstacle)) {
         finish();
@@ -1099,14 +1064,13 @@ footer strong { color: var(--cyan); }
     fullScoreText.textContent = fmt(score);
   }
 
-  // LOOP CONTROLADO PARA EVITAR TRAVAMENTOS
+  // LOOP DE ANIMAÇÃO
 
   function loop(timestamp) {
     if (!lastTime) {
       lastTime = timestamp;
     }
 
-    // Não acumula um salto enorme de tempo se a aba ficar inativa.
     const delta = Math.min(timestamp - lastTime, 50);
     lastTime = timestamp;
 
@@ -1183,7 +1147,6 @@ footer strong { color: var(--cyan); }
 
     const scores = readRanking();
     scores.push({ name, score });
-
     scores.sort((a, b) => Number(b.score) - Number(a.score));
 
     if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50)))) {
@@ -1203,69 +1166,21 @@ footer strong { color: var(--cyan); }
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
 
-  // ENTRAR EM TELA CHEIA SOMENTE COM O JOGO
+  // CLIQUE OU TOQUE NA ÁREA DO JOGO:
+  // - antes de começar: inicia;
+  // - durante a partida: pula;
+  // - depois de perder: reinicia imediatamente.
+  canvas.addEventListener('pointerdown', event => {
+    event.preventDefault();
 
-  async function enterGameFullscreen() {
-    try {
-      if (!document.fullscreenElement) {
-        await gameStage.requestFullscreen();
-
-        // Em celulares compatíveis, tenta travar a orientação em paisagem.
-        if (screen.orientation && screen.orientation.lock) {
-          try {
-            await screen.orientation.lock('landscape');
-          } catch (_) {
-            // Alguns aparelhos e navegadores não permitem travar a orientação.
-          }
-        }
-      }
-    } catch (error) {
-      message.textContent =
-        'Não foi possível abrir a tela cheia. Tente girar o celular ou usar outro navegador.';
-    }
-  }
-
-  async function exitGameFullscreen() {
-    try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      }
-    } catch (_) {
-      message.textContent =
-        'Use Esc ou os controles do navegador para sair da tela cheia.';
-    }
-
-    if (screen.orientation && screen.orientation.unlock) {
-      try {
-        screen.orientation.unlock();
-      } catch (_) {}
-    }
-  }
-
-  fullscreenButton.addEventListener('click', enterGameFullscreen);
-  exitFullscreenButton.addEventListener('click', exitGameFullscreen);
-
-  // Se sair da tela cheia pelo Esc, libera a orientação do celular.
-  document.addEventListener('fullscreenchange', () => {
-    if (
-      !document.fullscreenElement &&
-      screen.orientation &&
-      screen.orientation.unlock
-    ) {
-      try {
-        screen.orientation.unlock();
-      } catch (_) {}
-    }
-  });
-
-  canvas.addEventListener('pointerdown', () => {
-    if (!running && !ended) {
+    if (ended || !running) {
       start();
     } else {
       jump();
     }
   });
 
+  // CONTROLES DO TECLADO
   window.addEventListener('keydown', event => {
     if (
       event.code === 'Space' ||
@@ -1289,15 +1204,72 @@ footer strong { color: var(--cyan); }
     }
   });
 
+  // TELA CHEIA SOMENTE PARA O JOGO
+
+  async function enterGameFullscreen() {
+    try {
+      if (document.fullscreenElement === gameStage) {
+        await document.exitFullscreen();
+        return;
+      }
+
+      if (!gameStage.requestFullscreen) {
+        message.textContent =
+          'A tela cheia não é compatível com este navegador.';
+        return;
+      }
+
+      await gameStage.requestFullscreen();
+
+      // O bloqueio de orientação depende do navegador e do dispositivo.
+      if (screen.orientation && screen.orientation.lock) {
+        try {
+          await screen.orientation.lock('landscape');
+        } catch (_) {
+          // Alguns navegadores não permitem bloquear a orientação.
+        }
+      }
+    } catch (_) {
+      message.textContent =
+        'Não foi possível ativar a tela cheia neste navegador.';
+    }
+  }
+
+  fullscreenButton.addEventListener('click', enterGameFullscreen);
+
+  exitFullscreenButton.addEventListener('click', async () => {
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch (_) {
+        // O navegador pode impedir a saída programática.
+      }
+    }
+
+    if (screen.orientation && screen.orientation.unlock) {
+      try {
+        screen.orientation.unlock();
+      } catch (_) {}
+    }
+  });
+
+  document.addEventListener('fullscreenchange', () => {
+    fullscreenButton.textContent =
+      document.fullscreenElement === gameStage
+        ? '⛶ SAIR DA TELA CHEIA'
+        : '⛶ TELA CHEIA';
+  });
+
   document.addEventListener('visibilitychange', () => {
     lastTime = 0;
     accumulator = 0;
   });
 
+  // INICIALIZAÇÃO
+
   showRanking();
   render();
 
-  // Garante apenas um loop de animação.
   if (animationId) {
     cancelAnimationFrame(animationId);
   }
