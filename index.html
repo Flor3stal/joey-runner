@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -165,6 +164,21 @@ button.jump-button {
   box-shadow: 0 5px 0 #b88831;
 }
 
+button.fullscreen-button {
+  background: #8b9cff;
+  box-shadow: 0 5px 0 #5362b8;
+}
+
+/* Ajustes visuais quando a página inteira estiver em tela cheia. */
+:fullscreen body {
+  min-height: 100vh;
+  padding: 18px;
+}
+
+:fullscreen main {
+  width: min(1400px, 100%);
+}
+
 button:disabled {
   opacity: .5;
   cursor: not-allowed;
@@ -293,6 +307,7 @@ footer strong { color: var(--cyan); }
   <div class="controls">
     <button id="start">▶ COMEÇAR</button>
     <button id="jump" class="jump-button">PULAR ↑</button>
+    <button id="fullscreenBtn" class="fullscreen-button" type="button">⛶ TELA CHEIA</button>
   </div>
 
   <p class="help">
@@ -353,6 +368,7 @@ footer strong { color: var(--cyan); }
   const bestText = $('best');
   const startButton = $('start');
   const jumpButton = $('jump');
+  const fullscreenButton = $('fullscreenBtn');
   const saveButton = $('save');
   const playerInput = $('player');
   const rankingList = $('ranking');
@@ -1052,7 +1068,7 @@ footer strong { color: var(--cyan); }
 
     scores.sort((a, b) => Number(b.score) - Number(a.score));
 
-    if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50))) ) {
+    if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50)))) {
       message.textContent =
         'Não foi possível salvar no armazenamento deste navegador.';
       return;
@@ -1068,6 +1084,29 @@ footer strong { color: var(--cyan); }
 
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
+
+  // Alterna entre a página normal e a tela cheia.
+  function updateFullscreenButton() {
+    fullscreenButton.textContent = document.fullscreenElement
+      ? '⛶ SAIR DA TELA CHEIA'
+      : '⛶ TELA CHEIA';
+  }
+
+  fullscreenButton.addEventListener('click', async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      message.textContent =
+        'Seu navegador não permitiu a tela cheia. Tente pressionar F11 no computador.';
+    }
+  });
+
+  document.addEventListener('fullscreenchange', updateFullscreenButton);
+  updateFullscreenButton();
 
   canvas.addEventListener('pointerdown', () => {
     if (!running && !ended) {
