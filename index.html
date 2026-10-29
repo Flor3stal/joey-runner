@@ -1,0 +1,379 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Joey Runner | Start Brasília</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #10152b;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+    }
+
+    h1 {
+      color: #ffd166;
+      font-size: clamp(30px, 6vw, 52px);
+      text-shadow: 3px 3px #8b4c9e;
+    }
+
+    .subtitle { color: #6ef3e7; }
+
+    main {
+      max-width: 850px;
+      margin: 20px auto;
+      padding: 16px;
+      border: 3px solid #46517e;
+      border-radius: 12px;
+      background: #1b2340;
+    }
+
+    canvas {
+      width: 100%;
+      height: auto;
+      display: block;
+      border: 2px solid white;
+      border-radius: 6px;
+      image-rendering: pixelated;
+      touch-action: manipulation;
+    }
+
+    button, input {
+      padding: 12px;
+      margin: 6px;
+      border: 0;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #6ef3e7;
+      color: #10152b;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    input {
+      max-width: 100%;
+      background: #10152b;
+      color: white;
+      border: 1px solid #6ef3e7;
+    }
+
+    .scores {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 15px;
+      color: #ffd166;
+    }
+
+    #ranking {
+      display: inline-block;
+      text-align: left;
+    }
+
+    footer {
+      color: #aab3d1;
+      font-size: 12px;
+      margin: 24px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <p class="subtitle">START BRASÍLIA APRESENTA</p>
+    <h1>JOEY RUNNER</h1>
+    <p>Corra, pule e conquiste o primeiro lugar!</p>
+  </header>
+
+  <main>
+    <canvas id="game" width="800" height="330"></canvas>
+
+    <div class="scores">
+      <span>PONTOS: <b id="score">00000</b></span>
+      <span>RECORDE: <b id="best">00000</b></span>
+    </div>
+
+    <button id="start">COMEÇAR</button>
+    <button id="jump">PULAR ↑</button>
+
+    <p>Use ESPAÇO, a seta para cima ou toque no jogo para pular.</p>
+
+    <hr>
+
+    <h2>🏆 Ranking dos participantes</h2>
+    <input id="player" maxlength="18" placeholder="Seu nome ou apelido">
+    <button id="save" disabled>Salvar pontuação</button>
+    <ol id="ranking"></ol>
+    <p id="message">O ranking inicial fica salvo neste navegador.</p>
+  </main>
+
+  <footer>JOEY RUNNER • START BRASÍLIA</footer>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const scoreText = document.getElementById("score");
+    const bestText = document.getElementById("best");
+    const startButton = document.getElementById("start");
+    const jumpButton = document.getElementById("jump");
+    const saveButton = document.getElementById("save");
+    const playerInput = document.getElementById("player");
+    const rankingList = document.getElementById("ranking");
+    const message = document.getElementById("message");
+
+    let running = false;
+    let ended = false;
+    let frame = 0;
+    let score = 0;
+    let speed = 5;
+    let obstacles = [];
+    let best = Number(localStorage.getItem("joeyBest") || 0);
+
+    bestText.textContent = fmt(best);
+
+    const cat = { x: 90, y: 190, vy: 0, w: 60, h: 80 };
+    const ground = 270;
+
+    function fmt(n) {
+      return String(Math.floor(n)).padStart(5, "0");
+    }
+
+    function rect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.round(x), Math.round(y), w, h);
+    }
+
+    function background() {
+      rect(0, 0, 800, 330, "#55bdf5");
+      rect(690, 35, 40, 40, "#ffe17a");
+
+      for (let i = 0; i < 4; i++) {
+        const x = ((i * 230 - frame * 0.5) % 900 + 900) % 900;
+        rect(x, 65, 45, 10, "white");
+        rect(x + 10, 55, 25, 10, "white");
+      }
+
+      rect(0, 225, 800, 45, "#37b979");
+      rect(0, ground, 800, 60, "#713e32");
+      rect(0, ground, 800, 7, "#a0ec5b");
+
+      for (let i = 0; i < 20; i++) {
+        const x = ((i * 55 - frame * speed) % 850 + 850) % 850;
+        rect(x, 295, 25, 4, "#a55f46");
+      }
+    }
+
+    function drawCat() {
+      // Personagem provisório em pixel art.
+      // Depois vamos colocar a imagem original do mascote.
+      const x = cat.x;
+      const y = cat.y;
+
+      rect(x + 12, y + 2, 12, 15, "#f6a23a");
+      rect(x + 38, y + 2, 12, 15, "#f6a23a");
+      rect(x + 7, y + 12, 48, 38, "#f6a23a");
+      rect(x + 14, y + 20, 13, 17, "white");
+      rect(x + 36, y + 20, 13, 17, "white");
+      rect(x + 18, y + 24, 8, 12, "#12cc70");
+      rect(x + 39, y + 24, 8, 12, "#12cc70");
+      rect(x + 28, y + 37, 10, 7, "#8a453b");
+      rect(x + 17, y + 47, 28, 7, "#ffe0ae");
+      rect(x + 13, y + 53, 37, 22, "white");
+      rect(x + 13, y + 53, 37, 4, "#187fd0");
+      rect(x + 13, y + 74, 15, 6, "#1688df");
+      rect(x + 35, y + 74, 15, 6, "#1688df");
+    }
+
+    function drawObstacle(o) {
+      if (o.type === 0) {
+        rect(o.x, o.y, 28, 30, "#ff8a36");
+        rect(o.x + 6, o.y + 6, 16, 18, "#ffe17a");
+      } else {
+        rect(o.x + 4, o.y, 20, 28, "#ff5fa2");
+        rect(o.x, o.y + 7, 28, 14, "#ff5fa2");
+      }
+    }
+
+    function render() {
+      background();
+      obstacles.forEach(drawObstacle);
+      drawCat();
+
+      if (!running && !ended) {
+        panel("JOEY RUNNER", "APERTE COMEÇAR");
+      }
+
+      if (ended) {
+        panel("FIM DE JOGO!", "PONTUAÇÃO: " + fmt(score));
+      }
+    }
+
+    function panel(title, subtitle) {
+      rect(180, 105, 440, 95, "#10152b");
+      ctx.strokeStyle = "#ffe17a";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(180, 105, 440, 95);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffe17a";
+      ctx.font = "bold 27px monospace";
+      ctx.fillText(title, 400, 143);
+      ctx.fillStyle = "white";
+      ctx.font = "15px monospace";
+      ctx.fillText(subtitle, 400, 172);
+    }
+
+    function jump() {
+      if (running && cat.y >= 190) cat.vy = -13;
+    }
+
+    function start() {
+      running = true;
+      ended = false;
+      frame = 0;
+      score = 0;
+      speed = 5;
+      obstacles = [];
+      cat.y = 190;
+      cat.vy = 0;
+      saveButton.disabled = true;
+      scoreText.textContent = fmt(0);
+      render();
+    }
+
+    function finish() {
+      running = false;
+      ended = true;
+
+      if (score > best) {
+        best = score;
+        localStorage.setItem("joeyBest", best);
+      }
+
+      bestText.textContent = fmt(best);
+      saveButton.disabled = false;
+      message.textContent = "Digite seu nome para registrar a pontuação local.";
+      render();
+    }
+
+    function loop() {
+      if (running) {
+        frame++;
+        score = Math.floor(frame / 3);
+        speed = 5 + Math.min(5, frame / 450);
+
+        cat.vy += 0.65;
+        cat.y += cat.vy;
+
+        if (cat.y > 190) {
+          cat.y = 190;
+          cat.vy = 0;
+        }
+
+        if (frame % 75 === 0) {
+          obstacles.push({
+            x: 820,
+            y: 240,
+            w: 28,
+            h: 30,
+            type: Math.random() < 0.5 ? 0 : 1
+          });
+        }
+
+        obstacles.forEach(o => o.x -= speed);
+        obstacles = obstacles.filter(o => o.x > -40);
+
+        for (const o of obstacles) {
+          if (
+            cat.x + 48 > o.x &&
+            cat.x + 10 < o.x + o.w &&
+            cat.y + 72 > o.y
+          ) {
+            finish();
+            break;
+          }
+        }
+
+        scoreText.textContent = fmt(score);
+        render();
+      }
+
+      requestAnimationFrame(loop);
+    }
+
+    function showRanking() {
+      let scores = [];
+
+      try {
+        scores = JSON.parse(localStorage.getItem("joeyRanking") || "[]");
+      } catch (e) {
+        scores = [];
+      }
+
+      rankingList.replaceChildren();
+
+      scores.slice(0, 10).forEach(item => {
+        const li = document.createElement("li");
+        li.textContent = item.name + " — " + fmt(item.score);
+        rankingList.appendChild(li);
+      });
+    }
+
+    saveButton.addEventListener("click", () => {
+      if (!ended) return;
+
+      const name = playerInput.value.trim().slice(0, 18);
+
+      if (!name) {
+        message.textContent = "Digite seu nome antes de salvar.";
+        return;
+      }
+
+      let scores = [];
+
+      try {
+        scores = JSON.parse(localStorage.getItem("joeyRanking") || "[]");
+      } catch (e) {}
+
+      scores.push({ name, score });
+      scores.sort((a, b) => b.score - a.score);
+      scores = scores.slice(0, 50);
+
+      localStorage.setItem("joeyRanking", JSON.stringify(scores));
+      showRanking();
+
+      message.textContent =
+        "Pontuação salva neste navegador, ainda sem ranking compartilhado.";
+    });
+
+    startButton.addEventListener("click", start);
+    jumpButton.addEventListener("click", jump);
+
+    canvas.addEventListener("pointerdown", () => {
+      if (!running && !ended) start();
+      else jump();
+    });
+
+    window.addEventListener("keydown", event => {
+      if (event.code === "Space" || event.code === "ArrowUp") {
+        event.preventDefault();
+        if (!running && !ended) start();
+        else jump();
+      }
+    });
+
+    showRanking();
+    render();
+    loop();
+  </script>
+</body>
+</html>
