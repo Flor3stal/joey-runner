@@ -81,7 +81,7 @@ main {
   overflow: hidden;
   border: 4px solid #34476d;
   border-radius: 12px;
-  background: #65c8f5; /* Cor do céu */
+  background: #65c8f5; 
   box-shadow: 0 10px 0 rgba(0,0,0,0.2);
   position: relative;
 }
@@ -322,7 +322,7 @@ footer strong { color: var(--cyan); }
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false; // Garante pixels nítidos
+  ctx.imageSmoothingEnabled = false;
 
   const $ = id => document.getElementById(id);
   const scoreText = $('score');
@@ -339,7 +339,6 @@ footer strong { color: var(--cyan); }
   const GROUND = 310;
   const CAT_X = 115;
 
-  // Imagem de fundo 100% estática
   const bgImg = new Image();
   bgImg.src = 'escola-fundo.png'; 
   
@@ -367,7 +366,6 @@ footer strong { color: var(--cyan); }
   let best = readNumber('joeyBest');
   bestText.textContent = fmt(best);
 
-  // Status do boneco procedural
   const cat = {
     x: CAT_X,
     y: GROUND - 74,
@@ -410,22 +408,18 @@ footer strong { color: var(--cyan); }
   }
 
   function drawBackground() {
-    rect(0, 0, W, H, '#65c8f5'); // Fundo azul caso a imagem atrase
+    rect(0, 0, W, H, '#65c8f5');
 
     if (bgLoaded) {
-      // Desenha a imagem da escola de forma sólida e estática
-      // Esticamos a largura para preencher a tela, e a altura até a linha do chão
       ctx.drawImage(bgImg, 0, 0, W, GROUND + 20);
     }
   }
 
   function drawBirds() {
     birds.forEach(b => {
-      // Pássaros feitos de blocos pixelados
       ctx.fillStyle = '#2b364a';
-      rect(b.x, b.y, 6, 2, '#2b364a'); // Corpo
+      rect(b.x, b.y, 6, 2, '#2b364a'); 
       
-      // Bate as asas dependendo do frame
       if (b.wing === 0) {
         rect(b.x - 2, b.y - 3, 2, 3, '#2b364a');
         rect(b.x + 4, b.y - 3, 2, 3, '#2b364a');
@@ -437,49 +431,41 @@ footer strong { color: var(--cyan); }
   }
 
   function drawTrack() {
-    // Chão móvel (asfalto e grama)
     rect(0, GROUND, W, H - GROUND, '#243042');
     rect(0, GROUND, W, 6, '#495b73');
     rect(0, GROUND + 6, W, 4, '#1b2433');
 
-    // Faixas brancas que dão a sensação de velocidade
     for (let i = 0; i < 15; i++) {
       const x = ((i * 120 - floorOffset) % 1200 + 1200) % 1200 - 100;
       rect(x, GROUND + 40, 50, 6, '#8e9eab');
     }
   }
 
-  // O Mascote 100% Procedural recriado (Anima pernas e braços)
   function drawJoey() {
     const x = Math.round(cat.x);
     const y = Math.round(cat.y);
     const airborne = !cat.onGround;
     const pose = airborne ? 0 : Math.floor(cat.runFrame / 5) % 2;
 
-    // Sombra
     ctx.globalAlpha = airborne ? 0.2 : 0.4;
     rect(x - 2, GROUND - 2, 48, 6, '#0f1721');
     ctx.globalAlpha = 1;
 
-    // Cauda
     rect(x - 4, y + 44, 10, 8, '#c97a30');
     rect(x - 10, y + 37, 10, 9, '#f5a340');
     rect(x - 13, y + 29, 8, 10, '#f5a340');
     rect(x - 10, y + 31, 5, 4, '#9c542b');
 
-    // Orelhas
     rect(x + 3, y + 3, 12, 15, '#d88a39');
     rect(x + 27, y + 3, 12, 15, '#d88a39');
     rect(x + 6, y + 6, 6, 8, '#f7b2a0');
     rect(x + 30, y + 6, 6, 8, '#f7b2a0');
 
-    // Cabeça
     rect(x + 3, y + 12, 36, 31, '#f5a340');
     rect(x + 7, y + 8, 28, 32, '#ffba58');
     rect(x + 3, y + 24, 5, 12, '#d88a39');
     rect(x + 34, y + 24, 5, 12, '#d88a39');
 
-    // Olhos Verdes (como na referência)
     rect(x + 8, y + 19, 10, 12, '#ffffff');
     rect(x + 24, y + 19, 10, 12, '#ffffff');
     rect(x + 12, y + 21, 6, 8, '#12a344');
@@ -489,20 +475,17 @@ footer strong { color: var(--cyan); }
     rect(x + 12, y + 21, 3, 3, '#ffffff');
     rect(x + 25, y + 21, 3, 3, '#ffffff');
 
-    // Focinho e nariz
     rect(x + 13, y + 32, 17, 8, '#ffe2b0');
     rect(x + 18, y + 30, 7, 4, '#804b38');
     rect(x + 17, y + 37, 9, 3, '#713d35');
 
-    // Camiseta branca da Start
     rect(x + 8, y + 44, 27, 19, '#f7f7ef');
     rect(x + 8, y + 44, 27, 4, '#168bd0');
     rect(x + 8, y + 48, 4, 14, '#188bd0');
     rect(x + 31, y + 48, 4, 14, '#188bd0');
-    rect(x + 19, y + 49, 7, 6, '#152749'); // logo
+    rect(x + 19, y + 49, 7, 6, '#152749'); 
     rect(x + 21, y + 49, 3, 4, '#35d8cc');
 
-    // Movimentação procedural dos braços
     if (pose === 0) {
       rect(x + 1, y + 46, 8, 14, '#f5a340');
       rect(x + 2, y + 58, 8, 6, '#ffba58');
@@ -515,34 +498,29 @@ footer strong { color: var(--cyan); }
       rect(x + 36, y + 43, 7, 6, '#ffba58');
     }
 
-    // Shorts azuis
     rect(x + 10, y + 62, 24, 7, '#1479c6');
     rect(x + 10, y + 64, 11, 6, '#168bdc');
     rect(x + 23, y + 64, 11, 6, '#168bdc');
 
-    // Movimentação procedural das pernas
-    if (airborne) { // Pose de pulo
+    if (airborne) {
       rect(x + 12, y + 69, 7, 5, '#d88a39');
       rect(x + 25, y + 68, 7, 6, '#d88a39');
       rect(x + 7, y + 70, 12, 6, '#187fc7');
       rect(x + 25, y + 70, 13, 6, '#187fc7');
-      // Tênis no ar
       rect(x + 6, y + 75, 14, 5, '#f7f7ef');
       rect(x + 25, y + 75, 14, 5, '#f7f7ef');
-    } else if (pose === 0) { // Passo 1
+    } else if (pose === 0) { 
       rect(x + 13, y + 68, 7, 6, '#d88a39');
       rect(x + 25, y + 68, 7, 3, '#d88a39');
       rect(x + 12, y + 72, 13, 6, '#168bdc');
       rect(x + 25, y + 69, 11, 8, '#168bdc');
-      // Tênis passo 1
       rect(x + 7, y + 76, 16, 5, '#f7f7ef');
       rect(x + 25, y + 75, 16, 5, '#f7f7ef');
-    } else { // Passo 2
+    } else { 
       rect(x + 13, y + 68, 7, 3, '#d88a39');
       rect(x + 25, y + 68, 7, 6, '#d88a39');
       rect(x + 8, y + 69, 12, 8, '#168bdc');
       rect(x + 25, y + 72, 14, 6, '#168bdc');
-      // Tênis passo 2
       rect(x + 7, y + 75, 16, 5, '#f7f7ef');
       rect(x + 25, y + 76, 16, 5, '#f7f7ef');
     }
@@ -554,20 +532,17 @@ footer strong { color: var(--cyan); }
     ctx.globalAlpha = 1;
 
     if (o.type === 0) {
-      // Caixa
       rect(o.x, o.y, o.w, o.h, '#8a5c36');
       rect(o.x + 3, o.y + 3, o.w - 6, o.h - 6, '#a37145');
       rect(o.x + 3, o.y + o.h/2 - 2, o.w - 6, 3, '#734a29');
     } else if (o.type === 1) {
-      // Cone
       rect(o.x + 8, o.y, o.w - 16, 6, '#ffdf72');
       rect(o.x + 4, o.y + 6, o.w - 8, o.h - 16, '#f6a32c');
       rect(o.x + 4, o.y + 12, o.w - 8, 8, '#ffffff'); 
       rect(o.x, o.y + o.h - 10, o.w, 10, '#d86e27');
     } else {
-      // Livros Empilhados
       rect(o.x, o.y + 12, o.w, o.h - 12, '#e24e42');
-      rect(o.x + 2, y = o.y + 15, o.w - 4, 4, '#ffe6a8');
+      rect(o.x + 2, o.y + 15, o.w - 4, 4, '#ffe6a8');
       rect(o.x + 2, o.y + 22, o.w - 4, 4, '#f5be48');
       rect(o.x + 2, o.y, o.w - 4, 12, '#4b90d2');
       rect(o.x + 5, o.y + 3, o.w - 10, 6, '#9cd8ff');
@@ -661,7 +636,6 @@ footer strong { color: var(--cyan); }
   }
 
   function intersects(a, b) {
-    // Hitbox precisa calculada para saltos justos
     const ax = a.x + 8;
     const ay = a.y + 6;
     const aw = a.w - 16;
@@ -684,7 +658,6 @@ footer strong { color: var(--cyan); }
     floorOffset += speed;
     score = Math.floor(frame / 4);
 
-    // Sistema de pássaros aleatórios no céu
     if (Math.random() < 0.01 && birds.length < 4) {
       birds.push({ x: W + 20, y: 30 + Math.random() * 100, offset: Math.floor(Math.random() * 10) });
     }
@@ -694,7 +667,6 @@ footer strong { color: var(--cyan); }
     });
     birds = birds.filter(b => b.x > -20);
 
-    // Gravidade
     cat.vy += 0.65; 
     cat.y += cat.vy;
 
