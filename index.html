@@ -1,434 +1,771 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#10152b">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#10182b">
 <title>Joey Runner | Start Brasília</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+
 <style>
-:root{--navy:#10152b;--panel:#1b2340;--aqua:#6ef3e7;--gold:#ffd166;--pink:#ff78b7}
-*{box-sizing:border-box}
-body{margin:0;padding:18px 12px 28px;background:radial-gradient(ellipse at top,#29365f,var(--navy) 65%);color:#fffaf0;text-align:center;font-family:"Trebuchet MS",Arial,sans-serif}
-.brand{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
-.brand img{width:min(145px,30vw);height:58px;object-fit:contain;filter:drop-shadow(0 3px 0 #0003)}
-.kicker{margin:12px 0 5px;color:var(--aqua);font-weight:900;letter-spacing:.16em;text-transform:uppercase;font-size:clamp(12px,2.5vw,17px)}
-h1{margin:7px 0;color:var(--gold);font-size:clamp(32px,7vw,58px);font-weight:1000;letter-spacing:.04em;text-shadow:3px 4px #8b4c9e,6px 7px #0004}
-.subtitle{max-width:680px;margin:12px auto 20px;font-size:clamp(15px,2.8vw,21px);line-height:1.45}
-.subtitle strong{color:var(--aqua)}
-main{max-width:920px;margin:auto;padding:clamp(10px,3vw,24px);border:3px solid #52639b;border-radius:22px;background:linear-gradient(150deg,#252f52,var(--panel) 65%);box-shadow:0 10px 0 #090e20,0 20px 45px #0004}
-.gameframe{padding:6px;border:3px solid #fff7db;border-radius:15px;background:#55bdf5;box-shadow:0 5px 0 #34416c;overflow:hidden}
-canvas{width:100%;height:auto;display:block;border-radius:8px;image-rendering:pixelated;touch-action:manipulation}
-.scores{display:flex;justify-content:center;gap:12px 24px;flex-wrap:wrap;margin:19px 0;color:var(--gold);font-size:clamp(16px,3.5vw,22px);font-weight:900}
-.score{padding:10px 15px;background:#11182f;border:2px solid #4d5d8e;border-radius:12px}
-.score small{color:#bdc8e7}
-.controls{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-button{min-height:50px;padding:13px 23px;border:0;border-radius:13px;background:var(--aqua);color:var(--navy);box-shadow:0 5px #24a99f;font:900 clamp(15px,3vw,20px) "Trebuchet MS",Arial,sans-serif;cursor:pointer;touch-action:manipulation}
-button:active{transform:translateY(3px);box-shadow:0 2px #24a99f}
-.jump{background:var(--gold);box-shadow:0 5px #c58e2e}
-button:disabled{opacity:.45;cursor:not-allowed}
-.help{color:#dce5ff;line-height:1.5;font-size:clamp(13px,2.7vw,17px)}
-.help strong{color:var(--aqua)}
-hr{height:3px;border:0;margin:24px 0;background:linear-gradient(90deg,transparent,#65739d,transparent)}
-h2{font-size:clamp(22px,5vw,32px);margin:0 0 16px}
-h2 span{color:var(--gold)}
-.form{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
-input{width:min(360px,100%);min-height:50px;padding:12px 15px;border:2px solid var(--aqua);border-radius:12px;background:var(--navy);color:white;font-size:16px}
-#ranking{width:min(520px,100%);margin:16px auto;padding:0;list-style:none;text-align:left}
-#ranking li{display:flex;justify-content:space-between;gap:12px;margin:7px 0;padding:11px 14px;border:1px solid #3c4b78;border-radius:10px;background:#11182f}
-#ranking li:first-child{color:var(--gold);border-color:var(--gold)}
-#message{color:#bdc8e7;font-size:14px;line-height:1.5}
-footer{margin:24px 0 0;color:#aab3d1;font-size:12px;letter-spacing:.12em}
-footer strong{color:var(--aqua)}
-@media(max-width:520px){
-body{padding:13px 8px 22px}
-.brand{gap:6px}
-.brand img{width:min(118px,34vw);height:46px}
-main{border-radius:17px;padding:9px}
-.gameframe{padding:3px;border-width:2px}
-button{padding:12px 17px}
-.score{padding:8px 10px}
+:root {
+  --bg: #10182b;
+  --panel: #18243d;
+  --panel-light: #202f4d;
+  --gold: #ffd166;
+  --cyan: #65f0df;
+  --text: #f5f7ff;
+  --muted: #aab8d2;
+  --line: #344667;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 30px 18px;
+  background:
+    radial-gradient(ellipse at top, #293b62 0%, var(--bg) 65%);
+  color: var(--text);
+  font-family: "Outfit", sans-serif;
+  text-align: center;
+}
+
+header {
+  max-width: 900px;
+  margin: 0 auto 26px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 22px;
+}
+
+.brand img {
+  display: block;
+  width: 150px;
+  max-height: 68px;
+  object-fit: contain;
+}
+
+.eyebrow {
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 12px 0;
+  color: var(--gold);
+  font-size: clamp(38px, 7vw, 68px);
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -2px;
+  text-shadow: 3px 4px 0 #72508c;
+}
+
+.subtitle {
+  max-width: 620px;
+  margin: 16px auto 0;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.subtitle strong { color: var(--cyan); }
+
+main {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: clamp(15px, 3vw, 30px);
+  border: 1px solid #405477;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #1c2946, #141e35);
+  box-shadow: 0 24px 70px #0004;
+}
+
+.game-frame {
+  overflow: hidden;
+  border: 3px solid #f4f0d8;
+  border-radius: 15px;
+  background: #5bc1f2;
+  box-shadow: 0 7px 0 #344667;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.scores {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+.score-card {
+  min-width: 150px;
+  padding: 12px 18px;
+  border: 1px solid #43577d;
+  border-radius: 12px;
+  background: #10182b;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.score-card strong {
+  color: var(--gold);
+  font-size: 21px;
+  font-variant-numeric: tabular-nums;
+}
+
+.controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+button {
+  min-height: 52px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: 12px;
+  font: 700 16px "Outfit", sans-serif;
+  cursor: pointer;
+  transition: transform .15s, filter .15s;
+  touch-action: manipulation;
+}
+
+button:hover { filter: brightness(1.07); }
+button:active { transform: translateY(2px); }
+
+.primary {
+  background: var(--cyan);
+  color: #10182b;
+  box-shadow: 0 4px 0 #28a99f;
+}
+
+.jump-button {
+  background: var(--gold);
+  color: #10182b;
+  box-shadow: 0 4px 0 #bd8c2c;
+}
+
+.help {
+  margin: 18px 0 28px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.help strong { color: var(--cyan); }
+
+.ranking-section {
+  padding-top: 24px;
+  border-top: 1px solid #344667;
+}
+
+h2 {
+  margin: 0 0 20px;
+  font-size: clamp(22px, 4vw, 30px);
+  font-weight: 700;
+}
+
+.ranking-form {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 620px;
+  margin: auto;
+}
+
+input {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 14px 16px;
+  border: 1px solid #536b91;
+  border-radius: 10px;
+  outline: none;
+  background: #10182b;
+  color: white;
+  font: 500 15px "Outfit", sans-serif;
+}
+
+input:focus { border-color: var(--cyan); }
+
+button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+#ranking {
+  max-width: 620px;
+  margin: 18px auto;
+  padding-left: 40px;
+  text-align: left;
+}
+
+#ranking li {
+  padding: 10px 12px;
+  border-bottom: 1px solid #344667;
+  color: var(--text);
+}
+
+#ranking li:first-child { color: var(--gold); }
+
+#message {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+footer {
+  margin: 28px auto 0;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+footer strong { color: var(--cyan); }
+
+@media (max-width: 560px) {
+  body { padding: 22px 10px; }
+  main { padding: 12px; border-radius: 17px; }
+  .brand img { width: 125px; }
+  .eyebrow { letter-spacing: 2px; }
+  button { flex: 1 1 130px; padding: 0 12px; }
+  .score-card { min-width: 130px; padding: 10px; }
 }
 </style>
 </head>
+
 <body>
 <header>
- <div class="brand">
-  <img src="logo.jpeg" alt="Logo Start Brasília" onerror="this.hidden=true">
-  <img src="logo%202.jpeg" alt="Identidade visual Start" onerror="this.hidden=true">
- </div>
- <p class="kicker">Start Brasília apresenta</p>
- <h1>JOEY RUNNER</h1>
- <p class="subtitle">Uma aventura escolar com o Joey! <strong>Corra, pule e conquiste o primeiro lugar.</strong></p>
+  <div class="brand">
+    <!-- Exibe apenas um logo. Depois, trocaremos por um PNG transparente. -->
+    <img src="logo.jpeg" alt="Start Anglo Bilingual School"
+         onerror="this.style.display='none'">
+  </div>
+  <div class="eyebrow">Start Brasília apresenta</div>
+  <h1>JOEY RUNNER</h1>
+  <p class="subtitle">
+    Uma aventura escolar com o Joey!
+    <strong>Corra, pule e conquiste o primeiro lugar.</strong>
+  </p>
 </header>
 
 <main>
- <div class="gameframe">
-  <canvas id="game" width="800" height="330" aria-label="Joey Runner: pule os obstáculos escolares"></canvas>
- </div>
+  <div class="game-frame">
+    <canvas id="game" width="900" height="360"
+            aria-label="Jogo Joey Runner"></canvas>
+  </div>
 
- <div class="scores">
-  <div class="score"><small>PONTOS</small> <b id="score">00000</b></div>
-  <div class="score"><small>RECORDE</small> <b id="best">00000</b></div>
- </div>
+  <div class="scores">
+    <div class="score-card">PONTOS<br><strong id="score">00000</strong></div>
+    <div class="score-card">RECORDE<br><strong id="best">00000</strong></div>
+  </div>
 
- <div class="controls">
-  <button id="start">▶ COMEÇAR</button>
-  <button id="jump" class="jump">PULAR ↑</button>
- </div>
+  <div class="controls">
+    <button class="primary" id="start">▶ COMEÇAR</button>
+    <button class="jump-button" id="jump">PULAR ↑</button>
+  </div>
 
- <p class="help">Use <strong>ESPAÇO</strong>, <strong>↑</strong> ou toque no jogo para pular os materiais escolares.</p>
+  <p class="help">
+    Use <strong>ESPAÇO</strong>, <strong>↑</strong> ou toque no jogo
+    para pular os obstáculos escolares.
+  </p>
 
- <hr>
- <h2><span>🏆</span> Ranking dos participantes</h2>
-
- <div class="form">
-  <input id="player" maxlength="18" placeholder="Seu nome ou apelido" autocomplete="nickname" aria-label="Seu nome ou apelido">
-  <button id="save" disabled>Salvar pontuação</button>
- </div>
-
- <ol id="ranking"></ol>
- <p id="message">As pontuações ficam salvas neste navegador.</p>
+  <section class="ranking-section">
+    <h2>🏆 Ranking dos participantes</h2>
+    <div class="ranking-form">
+      <input id="player" maxlength="18"
+             placeholder="Seu nome ou apelido"
+             autocomplete="nickname">
+      <button class="primary" id="save" disabled>
+        Salvar pontuação
+      </button>
+    </div>
+    <ol id="ranking"></ol>
+    <p id="message">
+      O ranking é armazenado somente neste navegador.
+    </p>
+  </section>
 </main>
 
-<footer><strong>JOEY RUNNER</strong> • START BRASÍLIA • APRENDER TAMBÉM É UMA AVENTURA!</footer>
+<footer>
+  <strong>JOEY RUNNER</strong> · START BRASÍLIA ·
+  APRENDER TAMBÉM É UMA AVENTURA!
+</footer>
 
 <script>
-const canvas=document.querySelector("#game"),ctx=canvas.getContext("2d");
-const scoreText=document.querySelector("#score");
-const bestText=document.querySelector("#best");
-const startButton=document.querySelector("#start");
-const jumpButton=document.querySelector("#jump");
-const saveButton=document.querySelector("#save");
-const playerInput=document.querySelector("#player");
-const rankingList=document.querySelector("#ranking");
-const message=document.querySelector("#message");
+"use strict";
 
-const mascot=new Image();
-mascot.src="Mascote%20pixel.jpeg";
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
 
-let running=false,ended=false,frame=0,score=0,speed=5;
-let obstacles=[],best=Number(localStorage.getItem("joeyBest")||0),lastObstacle=0;
+const scoreText = document.getElementById("score");
+const bestText = document.getElementById("best");
+const startButton = document.getElementById("start");
+const jumpButton = document.getElementById("jump");
+const saveButton = document.getElementById("save");
+const playerInput = document.getElementById("player");
+const rankingList = document.getElementById("ranking");
+const message = document.getElementById("message");
 
-const cat={x:78,y:190,vy:0};
-const ground=270;
+const W = canvas.width;
+const H = canvas.height;
+const ground = 292;
 
-function fmt(n){
- return String(Math.floor(n)).padStart(5,"0");
+let state = "ready";
+let frame = 0;
+let score = 0;
+let best = readNumber("joeyBest");
+let speed = 3;
+let spawnDistance = 360;
+let obstacles = [];
+let lastTime = 0;
+let animationId = 0;
+
+const player = {
+  x: 105, y: ground - 66,
+  w: 42, h: 66,
+  vy: 0, grounded: true
+};
+
+const colors = {
+  orange: "#f3a33b",
+  orangeDark: "#c8752d",
+  white: "#fff9e9",
+  green: "#20bd7b",
+  blue: "#2487e8",
+  blueDark: "#1758a5",
+  skin: "#ffcf9f",
+  black: "#172039"
+};
+
+function readNumber(key) {
+  try { return Number(localStorage.getItem(key)) || 0; }
+  catch { return 0; }
 }
 
-function rect(x,y,w,h,c){
- ctx.fillStyle=c;
- ctx.fillRect(Math.round(x),Math.round(y),w,h);
+function fmt(n) {
+  return String(Math.floor(n)).padStart(5, "0");
 }
 
-function text(t,x,y,size,color){
- ctx.textAlign="center";
- ctx.textBaseline="middle";
- ctx.font=`900 ${size}px "Trebuchet MS",Arial,sans-serif`;
- ctx.fillStyle=color;
- ctx.fillText(t,x,y);
+bestText.textContent = fmt(best);
+
+function rect(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), w, h);
 }
 
-function cloud(x,y){
- rect(x+10,y,30,8,"#fffdf4");
- rect(x,y+8,54,9,"#fffdf4");
- rect(x+7,y-6,13,7,"#fffdf4");
-}
+function background() {
+  rect(0, 0, W, H, "#66c8f3");
 
-function background(){
- let sky=ctx.createLinearGradient(0,0,0,270);
- sky.addColorStop(0,"#55bdf5");
- sky.addColorStop(1,"#b5efff");
- ctx.fillStyle=sky;
- ctx.fillRect(0,0,800,330);
+  // Sol e nuvens
+  rect(760, 36, 36, 36, "#ffe18a");
+  rect(750, 46, 56, 16, "#ffe18a");
 
- rect(690,35,42,42,"#ffe17a");
- rect(699,26,24,9,"#ffe17a");
- rect(681,44,9,24,"#ffe17a");
-
- for(let i=0;i<4;i++){
-  let x=((i*235-frame*.45)%900+900)%900;
-  cloud(x,65+(i%2)*12);
- }
-
- // Escola e janelas ao fundo
- rect(0,175,800,58,"#86d7a2");
-
- for(let i=0;i<5;i++){
-  let x=i*175-((frame*.25)%175);
-  rect(x+18,150,68,38,"#f6e7bb");
-  rect(x+12,143,80,9,"#eaa76e");
-
-  for(let j=0;j<3;j++){
-   rect(x+27+j*19,160,9,11,"#55bdf5");
+  for (let i = 0; i < 4; i++) {
+    const x = ((i * 265 - frame * .22) % 1080 + 1080) % 1080;
+    rect(x, 65, 54, 10, "#fff");
+    rect(x + 10, 55, 34, 10, "#fff");
+    rect(x + 20, 75, 24, 6, "#fff");
   }
- }
 
- rect(0,218,800,52,"#37b979");
- rect(0,229,800,5,"#8de36d");
+  // Escola ao fundo
+  rect(500, 168, 220, 78, "#f5e3a7");
+  rect(486, 158, 248, 14, "#e9a76d");
+  rect(525, 184, 24, 30, "#60c8f5");
+  rect(570, 184, 24, 30, "#60c8f5");
+  rect(615, 184, 24, 30, "#60c8f5");
+  rect(665, 190, 35, 56, "#bd875b");
+  rect(677, 205, 12, 12, "#ffe3a1");
 
- for(let i=0;i<8;i++){
-  let x=((i*123-frame*1.5)%850+850)%850;
-  rect(x,241,5,5,i%2?"#ffe17a":"#ff78b7");
-  rect(x+2,246,2,6,"#278b55");
- }
+  // Vegetação e chão
+  rect(0, 230, W, 62, "#83d5a2");
+  rect(0, 260, W, 32, "#37b97c");
+  rect(0, 280, W, 12, "#229e6c");
+  rect(0, ground, W, H - ground, "#714537");
+  rect(0, ground, W, 7, "#ffe3a1");
 
- rect(0,ground,800,60,"#713e32");
- rect(0,ground,800,7,"#ffe4a3");
+  for (let i = 0; i < 22; i++) {
+    const x = ((i * 57 - frame * speed) % (W + 60) + W + 60) % (W + 60);
+    rect(x, 320, 24, 4, "#a9654d");
+  }
 
- for(let i=0;i<20;i++){
-  let x=((i*55-frame*speed)%850+850)%850;
-  rect(x,295,25,4,"#a55f46");
- }
+  // Pequenas flores
+  for (let i = 0; i < 12; i++) {
+    const x = ((i * 91 - frame * speed * .7) % (W + 40) + W + 40) % (W + 40);
+    rect(x, 251, 4, 8, "#258f5b");
+    rect(x - 2, 249, 4, 4, i % 2 ? "#ff68b5" : "#ffd166");
+  }
 }
 
-function drawCat(){
- if(mascot.complete&&mascot.naturalWidth>0){
-  // A imagem do mascote é desenhada no cenário.
-  // A composição screen ajuda a disfarçar o fundo escuro.
+// Joey desenhado por pixels, com animação de corrida e salto.
+function drawJoey() {
+  const x = Math.round(player.x);
+  const y = Math.round(player.y);
+  const running = state === "playing" && player.grounded;
+  const phase = Math.floor(frame / 5) % 2;
+
   ctx.save();
-  ctx.globalCompositeOperation="screen";
-  ctx.drawImage(mascot,cat.x-10,cat.y-12,88,96);
+
+  // Sombra
+  ctx.globalAlpha = player.grounded ? .25 : .10;
+  rect(x + 2, ground - 2, 42, 4, "#172039");
+  ctx.globalAlpha = 1;
+
+  // Orelhas
+  rect(x + 5, y + 2, 10, 17, colors.orange);
+  rect(x + 28, y + 2, 10, 17, colors.orange);
+  rect(x + 8, y + 7, 4, 7, colors.skin);
+  rect(x + 31, y + 7, 4, 7, colors.skin);
+
+  // Cabeça
+  rect(x + 3, y + 13, 37, 29, colors.orange);
+  rect(x + 7, y + 8, 29, 8, colors.orange);
+  rect(x + 7, y + 35, 29, 7, colors.orangeDark);
+
+  // Olhos e expressão
+  rect(x + 9, y + 20, 9, 10, colors.white);
+  rect(x + 25, y + 20, 9, 10, colors.white);
+  rect(x + 13, y + 22, 4, 7, colors.black);
+  rect(x + 28, y + 22, 4, 7, colors.black);
+  rect(x + 19, y + 31, 7, 4, "#8b453c");
+  rect(x + 16, y + 35, 14, 3, colors.skin);
+
+  // Uniforme
+  rect(x + 7, y + 42, 30, 5, colors.white);
+  rect(x + 9, y + 46, 26, 14, colors.white);
+  rect(x + 9, y + 46, 26, 4, colors.blue);
+  rect(x + 19, y + 50, 7, 7, colors.green);
+
+  // Braços alternados
+  if (running && phase) {
+    rect(x + 1, y + 46, 8, 9, colors.skin);
+    rect(x + 33, y + 43, 8, 10, colors.skin);
+  } else {
+    rect(x + 1, y + 43, 8, 10, colors.skin);
+    rect(x + 33, y + 46, 8, 9, colors.skin);
+  }
+
+  // Pernas animadas
+  if (running && phase) {
+    rect(x + 10, y + 59, 10, 5, colors.blue);
+    rect(x + 25, y + 59, 10, 5, colors.blue);
+    rect(x + 7, y + 62, 12, 5, colors.blueDark);
+    rect(x + 28, y + 62, 12, 5, colors.blueDark);
+  } else {
+    rect(x + 10, y + 59, 9, 7, colors.blue);
+    rect(x + 26, y + 59, 9, 7, colors.blue);
+    rect(x + 7, y + 64, 13, 4, colors.blueDark);
+    rect(x + 26, y + 64, 13, 4, colors.blueDark);
+  }
+
   ctx.restore();
- }else{
-  // Personagem provisório caso a imagem não carregue.
-  const x=cat.x,y=cat.y;
-
-  rect(x+12,y+2,12,15,"#f6a23a");
-  rect(x+38,y+2,12,15,"#f6a23a");
-  rect(x+7,y+12,48,38,"#f6a23a");
-  rect(x+14,y+20,13,17,"white");
-  rect(x+36,y+20,13,17,"white");
-  rect(x+18,y+24,8,12,"#12cc70");
-  rect(x+39,y+24,8,12,"#12cc70");
-  rect(x+28,y+37,10,7,"#8a453b");
-  rect(x+17,y+47,28,7,"#ffe0ae");
-  rect(x+13,y+53,37,22,"white");
-  rect(x+13,y+53,37,4,"#187fd0");
-  rect(x+13,y+74,15,6,"#1688df");
-  rect(x+35,y+74,15,6,"#1688df");
- }
 }
 
-function drawObstacle(o){
- let x=Math.round(o.x),y=o.y;
+function drawObstacle(o) {
+  const x = Math.round(o.x);
+  const y = o.y;
 
- if(o.type==="book"){
-  rect(x,y+5,36,27,"#e94f7c");
-  rect(x+4,y,30,27,"#ff78b7");
-  rect(x+8,y+5,2,17,"#fff1cf");
-  rect(x+14,y+7,14,3,"#fff1cf");
-  rect(x+14,y+13,12,2,"#fff1cf");
- }
- else if(o.type==="pencil"){
-  rect(x+8,y,17,31,"#ffd166");
-  rect(x+8,y,17,6,"#ff8a36");
-  rect(x+8,y+25,17,6,"#f5d8a1");
-  rect(x+13,y+31,7,7,"#71452d");
-  rect(x+14,y+32,5,4,"#29243a");
- }
- else if(o.type==="backpack"){
-  rect(x+5,y+5,28,29,"#1688df");
-  rect(x,y+10,9,20,"#0e6ab2");
-  rect(x+10,y,18,7,"#ffd166");
-  rect(x+11,y+15,16,11,"#6ef3e7");
-  rect(x+17,y+17,4,7,"#1688df");
- }
- else{
-  rect(x,y+12,20,20,"#ff78b7");
-  rect(x+20,y+3,20,29,"#ffd166");
-  rect(x+7,y+4,20,20,"#6ef3e7");
-  rect(x+12,y+9,10,10,"#fffaf0");
- }
+  if (o.type === "book") {
+    rect(x, y, 33, 33, "#e85e79");
+    rect(x + 5, y + 4, 23, 25, "#ffe8b5");
+    rect(x + 9, y + 9, 15, 3, "#d7a96d");
+    rect(x + 9, y + 16, 15, 3, "#d7a96d");
+    rect(x + 9, y + 23, 11, 2, "#d7a96d");
+  } else if (o.type === "pencil") {
+    rect(x + 8, y, 15, 37, "#ffd166");
+    rect(x + 8, y + 7, 15, 5, "#ff8a52");
+    rect(x + 8, y + 30, 15, 5, "#f2a24c");
+    rect(x + 12, y + 37, 7, 5, "#e7c39b");
+    rect(x + 14, y + 41, 3, 4, "#36445e");
+  } else if (o.type === "bag") {
+    rect(x + 3, y + 8, 30, 28, "#3188ed");
+    rect(x + 10, y, 16, 9, "#1758a5");
+    rect(x + 9, y + 15, 18, 12, "#65c8ff");
+    rect(x + 15, y + 18, 6, 6, "#1758a5");
+  } else if (o.type === "crate") {
+    rect(x, y, 38, 38, "#b7784b");
+    rect(x + 5, y + 5, 28, 28, "#d6a36a");
+    rect(x + 5, y + 16, 28, 5, "#9c603f");
+    rect(x + 16, y + 5, 5, 28, "#9c603f");
+  } else if (o.type === "cone") {
+    rect(x + 13, y, 12, 7, "#fff0ce");
+    rect(x + 9, y + 7, 20, 9, "#ff874d");
+    rect(x + 5, y + 16, 28, 10, "#ff874d");
+    rect(x, y + 26, 38, 6, "#ffe5ac");
+  }
 }
 
-function panel(title,sub){
- rect(155,100,490,108,"#10152b");
- ctx.strokeStyle="#ffe17a";
- ctx.lineWidth=4;
- ctx.strokeRect(155,100,490,108);
- text(title,400,139,29,"#ffd166");
- text(sub,400,174,16,"#fff");
+function panel(title, subtitle) {
+  rect(190, 115, 520, 108, "#10182b");
+  ctx.strokeStyle = "#ffd166";
+  ctx.lineWidth = 3;
+  ctx.strokeRect(190, 115, 520, 108);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#ffd166";
+  ctx.font = "800 29px Outfit, sans-serif";
+  ctx.fillText(title, W / 2, 159);
+
+  ctx.fillStyle = "#f5f7ff";
+  ctx.font = "600 17px Outfit, sans-serif";
+  ctx.fillText(subtitle, W / 2, 190);
 }
 
-function render(){
- background();
- obstacles.forEach(drawObstacle);
- drawCat();
+function render() {
+  background();
+  obstacles.forEach(drawObstacle);
+  drawJoey();
 
- if(!running&&!ended){
-  panel("JOEY RUNNER","APERTE COMEÇAR PARA JOGAR!");
- }
-
- if(ended){
-  panel("FIM DE JOGO!","PONTUAÇÃO: "+fmt(score));
- }
+  if (state === "ready") {
+    panel("JOEY RUNNER", "APERTE COMEÇAR PARA JOGAR");
+  } else if (state === "over") {
+    panel("FIM DE JOGO!", "PONTUAÇÃO: " + fmt(score));
+  } else if (state === "paused") {
+    panel("PAUSADO", "APERTE COMEÇAR PARA RETOMAR");
+  }
 }
 
-function jump(){
- if(running&&cat.y>=190){
-  cat.vy=-13;
- }
-}
-
-function start(){
- running=true;
- ended=false;
- frame=0;
- score=0;
- speed=5;
- obstacles=[];
- lastObstacle=0;
- cat.y=190;
- cat.vy=0;
- saveButton.disabled=true;
- scoreText.textContent=fmt(0);
- message.textContent="Boa sorte! Pule os materiais escolares.";
- render();
-}
-
-function finish(){
- running=false;
- ended=true;
-
- if(score>best){
-  best=score;
-  localStorage.setItem("joeyBest",String(best));
- }
-
- bestText.textContent=fmt(best);
- saveButton.disabled=false;
- message.textContent="Digite seu nome para registrar a pontuação neste navegador.";
- render();
-}
-
-function loop(){
- if(running){
-  frame++;
-  score=Math.floor(frame/3);
-  speed=5+Math.min(5,frame/450);
-
-  cat.vy+=.65;
-  cat.y+=cat.vy;
-
-  if(cat.y>190){
-   cat.y=190;
-   cat.vy=0;
+function start() {
+  if (state === "paused") {
+    state = "playing";
+    lastTime = 0;
+    return;
   }
 
-  let interval=Math.max(48,78-Math.floor(frame/400));
+  if (state === "playing") return;
 
-  if(frame-lastObstacle>=interval){
-   let types=["book","pencil","backpack","blocks"];
-   let type=types[Math.floor(Math.random()*types.length)];
-
-   obstacles.push({
-    x:820,
-    y:type==="pencil"?230:232,
-    w:type==="blocks"?40:36,
-    type
-   });
-
-   lastObstacle=frame;
-  }
-
-  obstacles.forEach(o=>o.x-=speed);
-  obstacles=obstacles.filter(o=>o.x>-55);
-
-  for(const o of obstacles){
-   if(
-    cat.x+57>o.x&&
-    cat.x+13<o.x+o.w&&
-    cat.y+70>o.y+2
-   ){
-    finish();
-    break;
-   }
-  }
-
-  scoreText.textContent=fmt(score);
+  frame = 0;
+  score = 0;
+  speed = 3;
+  spawnDistance = 330;
+  obstacles = [];
+  player.y = ground - player.h;
+  player.vy = 0;
+  player.grounded = true;
+  state = "playing";
+  saveButton.disabled = true;
+  startButton.textContent = "↻ RECOMEÇAR";
+  scoreText.textContent = fmt(0);
   render();
- }
-
- requestAnimationFrame(loop);
 }
 
-function showRanking(){
- let scores=[];
-
- try{
-  scores=JSON.parse(localStorage.getItem("joeyRanking")||"[]");
- }catch(e){}
-
- rankingList.replaceChildren();
-
- scores.slice(0,10).forEach((item,i)=>{
-  let li=document.createElement("li");
-  let name=document.createElement("span");
-  let points=document.createElement("strong");
-
-  name.textContent=`${i+1}. ${item.name}`;
-  points.textContent=fmt(item.score);
-
-  li.append(name,points);
-  rankingList.append(li);
- });
-
- if(!scores.length){
-  let li=document.createElement("li");
-  li.textContent="Seja o primeiro a entrar no ranking!";
-  rankingList.append(li);
- }
+function jump() {
+  if (state !== "playing" || !player.grounded) return;
+  player.vy = -10.8;
+  player.grounded = false;
 }
 
-saveButton.addEventListener("click",()=>{
- if(!ended)return;
+function finish() {
+  state = "over";
+  score = Math.floor(frame / 6);
 
- let name=playerInput.value.trim().slice(0,18);
+  if (score > best) {
+    best = score;
+    try { localStorage.setItem("joeyBest", best); } catch {}
+  }
 
- if(!name){
-  message.textContent="Digite seu nome antes de salvar.";
-  playerInput.focus();
-  return;
- }
+  bestText.textContent = fmt(best);
+  scoreText.textContent = fmt(score);
+  saveButton.disabled = false;
+  startButton.textContent = "↻ JOGAR NOVAMENTE";
+  message.textContent = "Digite seu nome para salvar a pontuação neste navegador.";
+  render();
+}
 
- let scores=[];
+function createObstacle() {
+  const choices = ["book", "pencil", "bag", "crate", "cone"];
+  const type = choices[Math.floor(Math.random() * choices.length)];
 
- try{
-  scores=JSON.parse(localStorage.getItem("joeyRanking")||"[]");
- }catch(e){}
+  const dimensions = {
+    book:   { w: 33, h: 33 },
+    pencil: { w: 31, h: 45 },
+    bag:    { w: 36, h: 42 },
+    crate:  { w: 38, h: 38 },
+    cone:   { w: 38, h: 32 }
+  };
 
- scores.push({name,score});
- scores.sort((a,b)=>b.score-a.score);
- scores=scores.slice(0,50);
+  const d = dimensions[type];
+  obstacles.push({
+    type,
+    x: W + 20,
+    y: ground - d.h,
+    w: d.w,
+    h: d.h
+  });
+}
 
- localStorage.setItem("joeyRanking",JSON.stringify(scores));
- showRanking();
+function collides(a, b) {
+  // Caixa ligeiramente menor para colisões mais justas.
+  const ax = a.x + 7;
+  const ay = a.y + 5;
+  const aw = a.w - 13;
+  const ah = a.h - 6;
 
- message.textContent="Pontuação salva neste navegador. Para compartilhar o ranking entre participantes, será necessário conectar um banco de dados.";
+  const bx = b.x + 4;
+  const by = b.y + 3;
+  const bw = b.w - 8;
+  const bh = b.h - 3;
+
+  return ax < bx + bw && ax + aw > bx &&
+         ay < by + bh && ay + ah > by;
+}
+
+function update(dt) {
+  frame += dt * 60;
+  score = Math.floor(frame / 6);
+
+  // Começa a 3 px por quadro e acelera lentamente.
+  speed = Math.min(7.2, 3 + frame / 2400);
+
+  // Gravidade e salto
+  player.vy += .48 * dt * 60;
+  player.y += player.vy * dt * 60;
+
+  if (player.y >= ground - player.h) {
+    player.y = ground - player.h;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  // Distância variável: evita sequências impossíveis.
+  spawnDistance -= speed * dt * 60;
+
+  if (spawnDistance <= 0) {
+    createObstacle();
+
+    const minGap = Math.max(145, 205 - speed * 7);
+    const maxGap = Math.max(minGap + 35, 330 - speed * 9);
+
+    spawnDistance = minGap + Math.random() * (maxGap - minGap);
+  }
+
+  for (const o of obstacles) {
+    o.x -= speed * dt * 60;
+
+    if (collides(player, o)) {
+      finish();
+      return;
+    }
+  }
+
+  obstacles = obstacles.filter(o => o.x + o.w > -10);
+  scoreText.textContent = fmt(score);
+}
+
+function loop(timestamp) {
+  const dt = lastTime
+    ? Math.min((timestamp - lastTime) / 1000, .04)
+    : 1 / 60;
+
+  lastTime = timestamp;
+
+  if (state === "playing") update(dt);
+  render();
+  animationId = requestAnimationFrame(loop);
+}
+
+function showRanking() {
+  let scores = [];
+
+  try {
+    scores = JSON.parse(localStorage.getItem("joeyRanking") || "[]");
+    if (!Array.isArray(scores)) scores = [];
+  } catch {
+    scores = [];
+  }
+
+  rankingList.replaceChildren();
+
+  scores.slice(0, 10).forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item.name + " — " + fmt(item.score);
+    rankingList.appendChild(li);
+  });
+
+  if (scores.length === 0) {
+    const li = document.createElement("li");
+    li.textContent = "Seja o primeiro a entrar no ranking!";
+    rankingList.appendChild(li);
+  }
+}
+
+saveButton.addEventListener("click", () => {
+  if (state !== "over") return;
+
+  const name = playerInput.value.trim().slice(0, 18);
+
+  if (!name) {
+    message.textContent = "Digite seu nome antes de salvar.";
+    playerInput.focus();
+    return;
+  }
+
+  let scores = [];
+
+  try {
+    scores = JSON.parse(localStorage.getItem("joeyRanking") || "[]");
+    if (!Array.isArray(scores)) scores = [];
+  } catch {}
+
+  scores.push({ name, score });
+  scores.sort((a, b) => b.score - a.score);
+
+  try {
+    localStorage.setItem("joeyRanking", JSON.stringify(scores.slice(0, 50)));
+    message.textContent = "Pontuação salva neste navegador.";
+    showRanking();
+  } catch {
+    message.textContent = "Não foi possível salvar neste navegador.";
+  }
 });
 
-startButton.addEventListener("click",start);
-jumpButton.addEventListener("click",jump);
+startButton.addEventListener("click", start);
+jumpButton.addEventListener("click", jump);
 
-canvas.addEventListener("pointerdown",()=>{
- if(!running&&!ended)start();
- else jump();
+canvas.addEventListener("pointerdown", () => {
+  if (state === "ready") start();
+  else if (state === "playing") jump();
+  else if (state === "over") start();
 });
 
-window.addEventListener("keydown",e=>{
- if(e.code==="Space"||e.code==="ArrowUp"){
-  e.preventDefault();
+window.addEventListener("keydown", event => {
+  if (event.code === "Space" || event.code === "ArrowUp") {
+    if (event.target instanceof HTMLInputElement) return;
+    event.preventDefault();
 
-  if(!running&&!ended)start();
-  else jump();
- }
+    if (state === "ready") start();
+    else if (state === "playing") jump();
+  }
 });
 
-bestText.textContent=fmt(best);
 showRanking();
 render();
-loop();
+animationId = requestAnimationFrame(loop);
 </script>
 </body>
 </html>
