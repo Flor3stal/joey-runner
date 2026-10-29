@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -11,7 +10,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Press+Start+2P&display=swap');
 
 :root {
-  --bg: #10182e;
+  --bg: #0b1120;
   --panel: #192541;
   --cyan: #4debd8;
   --gold: #ffd166;
@@ -25,9 +24,7 @@ body {
   margin: 0;
   min-height: 100vh;
   padding: 28px 18px;
-  background:
-    radial-gradient(ellipse at 50% 0%, #26375d 0%, transparent 60%),
-    var(--bg);
+  background: radial-gradient(circle at top, #1c2b4d 0%, var(--bg) 100%);
   color: var(--white);
   font-family: 'Nunito', sans-serif;
   text-align: center;
@@ -37,11 +34,10 @@ header { max-width: 900px; margin: 0 auto 24px; }
 
 .brand-logo {
   display: block;
-  width: 112px;
-  height: 58px;
+  width: 130px;
+  height: auto;
   object-fit: contain;
   margin: 0 auto 22px;
-  image-rendering: auto;
 }
 
 .eyebrow {
@@ -50,42 +46,45 @@ header { max-width: 900px; margin: 0 auto 24px; }
   letter-spacing: 4px;
   font-size: 12px;
   text-transform: uppercase;
+  margin-bottom: 8px;
 }
 
 h1 {
-  margin: 10px 0;
+  margin: 0;
   font-size: clamp(36px, 6vw, 65px);
   line-height: 1.1;
   font-weight: 900;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
 }
 
 h1 span { color: var(--gold); }
 
 .subtitle {
   color: #cbd5ed;
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.6;
-  max-width: 650px;
+  max-width: 600px;
   margin: 16px auto 0;
 }
 
 main {
-  width: min(1080px, 100%);
+  width: min(1000px, 100%);
   margin: auto;
   padding: clamp(14px, 3vw, 28px);
-  border: 1px solid #34476d;
-  border-radius: 24px;
-  background: linear-gradient(145deg, #1c2a49, #16213b);
-  box-shadow: 0 25px 70px #050a1740;
+  border: 1px solid #2a3a5c;
+  border-radius: 20px;
+  background: rgba(25, 37, 65, 0.7);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
 }
 
 .game-frame {
   overflow: hidden;
-  border: 3px solid #edf5ff;
-  border-radius: 15px;
-  background: #65c8f5;
-  box-shadow: 0 7px 0 #344767;
+  border: 4px solid #34476d;
+  border-radius: 12px;
+  background: #5ab2e6; /* Cor do céu caso a imagem não cubra tudo */
+  box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+  position: relative;
 }
 
 canvas {
@@ -94,85 +93,93 @@ canvas {
   height: auto;
   aspect-ratio: 960 / 400;
   image-rendering: pixelated;
-  image-rendering: crisp-edges;
   touch-action: manipulation;
 }
 
 .scores {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 20px;
   flex-wrap: wrap;
-  margin: 24px 0 20px;
+  margin: 28px 0 20px;
 }
 
 .score-card {
-  min-width: 145px;
-  padding: 14px 20px;
+  min-width: 160px;
+  padding: 16px 20px;
   border: 1px solid #3b4d71;
-  border-radius: 14px;
-  background: #10182e;
+  border-radius: 12px;
+  background: rgba(16, 24, 46, 0.8);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,0.05);
 }
 
 .score-card small {
   display: block;
-  color: #bac8e6;
-  font-size: 11px;
+  color: #8294b7;
+  font-size: 12px;
   font-weight: 900;
-  letter-spacing: 1px;
-  margin-bottom: 7px;
+  letter-spacing: 1.5px;
+  margin-bottom: 5px;
 }
 
 .score-card strong {
-  color: var(--gold);
-  font-size: 25px;
+  color: var(--white);
+  font-size: 28px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
+}
+
+.score-card strong.highlight {
+  color: var(--gold);
 }
 
 .controls {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 15px;
 }
 
 button {
-  min-height: 51px;
-  padding: 13px 25px;
+  min-height: 54px;
+  padding: 0 30px;
   border: 0;
   border-radius: 12px;
   background: var(--cyan);
-  color: #10182e;
-  font: 900 15px 'Nunito', sans-serif;
+  color: #0b1120;
+  font: 900 16px 'Nunito', sans-serif;
   cursor: pointer;
-  transition: transform .15s, filter .15s;
-  box-shadow: 0 4px 0 #239b92;
+  transition: all .15s ease;
+  box-shadow: 0 5px 0 #239b92;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-button:hover { filter: brightness(1.07); transform: translateY(-2px); }
-button:active { transform: translateY(2px); box-shadow: none; }
+button:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 7px 0 #239b92; }
+button:active { transform: translateY(3px); box-shadow: 0 2px 0 #239b92; }
 
 button.jump-button {
   background: var(--gold);
-  box-shadow: 0 4px 0 #b88831;
+  box-shadow: 0 5px 0 #b88831;
 }
+button.jump-button:hover { box-shadow: 0 7px 0 #b88831; }
+button.jump-button:active { box-shadow: 0 2px 0 #b88831; }
 
 .help {
   color: var(--muted);
-  font-size: 13px;
-  margin: 20px 0 0;
+  font-size: 14px;
+  margin: 24px 0 0;
 }
 
 .divider {
   border: 0;
-  border-top: 1px solid #34415e;
-  margin: 30px 0;
+  border-top: 1px solid #2a3a5c;
+  margin: 35px 0;
 }
 
 .ranking-section h2 {
-  font-size: clamp(22px, 3vw, 30px);
-  margin: 0 0 22px;
+  font-size: clamp(22px, 3vw, 28px);
+  margin: 0 0 24px;
   font-weight: 900;
 }
 
@@ -180,30 +187,31 @@ button.jump-button {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 12px;
 }
 
 input {
-  width: min(330px, 100%);
-  min-height: 50px;
-  padding: 12px 16px;
-  background: #10182e;
-  border: 1px solid #4a5d82;
-  border-radius: 11px;
+  width: min(350px, 100%);
+  min-height: 54px;
+  padding: 12px 20px;
+  background: #111a30;
+  border: 2px solid #34476d;
+  border-radius: 12px;
   color: white;
-  font: 600 15px 'Nunito', sans-serif;
+  font: 700 16px 'Nunito', sans-serif;
   outline: none;
+  transition: border-color 0.2s;
 }
 
 input:focus { border-color: var(--cyan); }
-input::placeholder { color: #8595b5; }
-button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+input::placeholder { color: #627599; font-weight: 600; }
+button:disabled { opacity: .5; cursor: not-allowed; transform: none !important; box-shadow: 0 5px 0 rgba(0,0,0,0.2) !important; }
 
 #ranking {
   list-style: none;
   padding: 0;
-  max-width: 550px;
-  margin: 20px auto 0;
+  max-width: 600px;
+  margin: 25px auto 0;
   text-align: left;
 }
 
@@ -211,55 +219,54 @@ button:disabled { opacity: .4; cursor: not-allowed; transform: none; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
-  padding: 12px 15px;
-  margin: 7px 0;
-  border: 1px solid #334462;
-  border-radius: 10px;
-  background: #111a30;
+  gap: 15px;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: 1px solid #2a3a5c;
+  border-radius: 12px;
+  background: rgba(17, 26, 48, 0.6);
   font-weight: 800;
+  font-size: 16px;
 }
 
-#ranking li:first-child { border-color: #a8883f; }
-.rank-number { color: var(--gold); min-width: 28px; }
+#ranking li:first-child { 
+  border-color: var(--gold); 
+  background: rgba(255, 209, 102, 0.1);
+}
+
+.rank-number { color: var(--gold); min-width: 30px; font-size: 18px; }
 .rank-name { flex: 1; overflow-wrap: anywhere; }
-.rank-score { color: var(--cyan); font-variant-numeric: tabular-nums; }
+.rank-score { color: var(--cyan); font-variant-numeric: tabular-nums; font-size: 18px; }
 
 #message {
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   min-height: 20px;
-  margin-top: 18px;
+  margin-top: 20px;
 }
 
 footer {
-  margin: 30px auto 0;
-  color: #8294b7;
-  font-size: 11px;
+  margin: 40px auto 20px;
+  color: #627599;
+  font-size: 12px;
   letter-spacing: 1px;
+  font-weight: 700;
 }
 
 footer strong { color: var(--cyan); }
 
 @media (max-width: 600px) {
-  body { padding: 20px 10px; }
-  main { border-radius: 17px; padding: 10px; }
-  .brand-logo { width: 95px; height: 48px; }
-  .eyebrow { letter-spacing: 2px; }
-  .subtitle { font-size: 14px; }
-  .score-card { min-width: 125px; padding: 12px; }
-  button { padding: 12px 17px; }
+  body { padding: 15px 10px; }
+  main { border-radius: 16px; padding: 15px; }
+  .score-card { min-width: 130px; padding: 12px; }
+  button { padding: 0 20px; font-size: 14px; }
 }
 </style>
 </head>
 
 <body>
 <header>
-  <img
-    class="brand-logo"
-    src="start_logo_branca_transparente.png"
-    alt="Start Anglo Bilingual School"
-  >
+  <img class="brand-logo" src="start_logo_branca_transparente.png" alt="Start Anglo Bilingual School">
   <div class="eyebrow">Start Brasília apresenta</div>
   <h1>JOEY <span>RUNNER</span></h1>
   <p class="subtitle">
@@ -270,8 +277,7 @@ footer strong { color: var(--cyan); }
 
 <main>
   <div class="game-frame">
-    <canvas id="game" width="960" height="400"
-      aria-label="Jogo Joey Runner em pixel art"></canvas>
+    <canvas id="game" width="960" height="400" aria-label="Jogo Joey Runner"></canvas>
   </div>
 
   <div class="scores">
@@ -281,7 +287,7 @@ footer strong { color: var(--cyan); }
     </div>
     <div class="score-card">
       <small>RECORDE LOCAL</small>
-      <strong id="best">00000</strong>
+      <strong id="best" class="highlight">00000</strong>
     </div>
   </div>
 
@@ -292,7 +298,6 @@ footer strong { color: var(--cyan); }
 
   <p class="help">
     Use ESPAÇO, ↑, W ou toque na tela para pular.
-    Desvie das caixas, cones, livros e mochilas!
   </p>
 
   <hr class="divider">
@@ -300,9 +305,7 @@ footer strong { color: var(--cyan); }
   <section class="ranking-section">
     <h2>🏆 Ranking dos participantes</h2>
     <div class="ranking-form">
-      <input id="player" maxlength="18"
-        placeholder="Seu nome ou apelido"
-        aria-label="Seu nome ou apelido">
+      <input id="player" maxlength="18" placeholder="Seu nome ou apelido" aria-label="Seu nome ou apelido">
       <button id="save" disabled>Salvar pontuação</button>
     </div>
     <ol id="ranking"></ol>
@@ -320,6 +323,8 @@ footer strong { color: var(--cyan); }
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
+  
+  // Garante a nitidez do pixel art no canvas
   ctx.imageSmoothingEnabled = false;
 
   const $ = id => document.getElementById(id);
@@ -332,19 +337,41 @@ footer strong { color: var(--cyan); }
   const rankingList = $('ranking');
   const message = $('message');
 
+  // Configurações do Jogo
   const W = 960;
   const H = 400;
-  const GROUND = 305;
-  const CAT_X = 115;
+  const GROUND = 330; // Chão rebaixado para mostrar mais a escola
+  const CAT_X = 120;
+
+  // Carregamento de Imagens do Repositório
+  const bgImg = new Image();
+  bgImg.src = 'escola-fundo.png'; 
+  
+  const catImg = new Image();
+  // NOTA: Para remover o fundo preto, transforme este arquivo em PNG transparente
+  // e altere o nome aqui para 'Mascote pixel.png'
+  catImg.src = 'Mascote pixel.jpeg'; 
+
+  let imagesLoaded = 0;
+  function onImageLoad() {
+    imagesLoaded++;
+    if (imagesLoaded === 2) render(); // Desenha a tela inicial assim que carregar
+  }
+  bgImg.onload = onImageLoad;
+  catImg.onload = onImageLoad;
 
   let running = false;
   let ended = false;
   let frame = 0;
   let score = 0;
-  let speed = 6;
-  let distanceToNext = 390;
+  let speed = 7;
+  let distanceToNext = 400;
   let obstacles = [];
-  let sceneryOffset = 0;
+  
+  // Separamos as velocidades para evitar enjoo (Parallax)
+  let backgroundOffset = 0; 
+  let floorOffset = 0;
+
   let lastTime = 0;
   let accumulator = 0;
   let gameOverSaved = false;
@@ -356,12 +383,11 @@ footer strong { color: var(--cyan); }
 
   const cat = {
     x: CAT_X,
-    y: GROUND - 74,
+    y: GROUND - 95,
     vy: 0,
-    w: 42,
-    h: 74,
-    onGround: true,
-    runFrame: 0
+    w: 80, // Largura renderizada do mascote
+    h: 95, // Altura renderizada do mascote
+    onGround: true
   };
 
   function fmt(n) {
@@ -369,399 +395,148 @@ footer strong { color: var(--cyan); }
   }
 
   function readNumber(key) {
-    try {
-      return Math.max(0, Number(localStorage.getItem(key)) || 0);
-    } catch (_) {
-      return 0;
-    }
+    try { return Math.max(0, Number(localStorage.getItem(key)) || 0); } 
+    catch (_) { return 0; }
   }
 
   function readRanking() {
     try {
       const data = JSON.parse(localStorage.getItem('joeyRanking') || '[]');
-      return Array.isArray(data)
-        ? data.filter(v =>
-            v &&
-            typeof v.name === 'string' &&
-            Number.isFinite(Number(v.score))
-          )
-        : [];
-    } catch (_) {
-      return [];
-    }
+      return Array.isArray(data) ? data.filter(v => v && typeof v.name === 'string' && Number.isFinite(Number(v.score))) : [];
+    } catch (_) { return []; }
   }
 
   function saveLocal(key, value) {
-    try {
-      localStorage.setItem(key, value);
-      return true;
-    } catch (_) {
-      return false;
-    }
+    try { localStorage.setItem(key, value); return true; } 
+    catch (_) { return false; }
   }
 
   function rect(x, y, w, h, color) {
     ctx.fillStyle = color;
-    ctx.fillRect(
-      Math.round(x),
-      Math.round(y),
-      Math.max(1, Math.round(w)),
-      Math.max(1, Math.round(h))
-    );
+    ctx.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h)));
   }
 
   function pixelText(text, x, y, size, color, align = 'center') {
     ctx.fillStyle = color;
-    ctx.font = `bold ${size}px monospace`;
+    ctx.font = `900 ${size}px 'Nunito', sans-serif`;
     ctx.textAlign = align;
     ctx.fillText(text, x, y);
   }
 
-  // Céu, nuvens e escola ao fundo.
-  // Tudo é desenhado em blocos para manter o estilo 16-bit.
-  function drawSky() {
-    rect(0, 0, W, H, '#66c8f5');
+  function drawBackground() {
+    // Fundo azul limpo padrão caso a imagem não carregue a tempo
+    rect(0, 0, W, H, '#5ab2e6');
 
-    rect(0, 0, W, 80, '#50b7f0');
-    rect(0, 80, W, 75, '#70cef5');
-    rect(0, 155, W, 65, '#9bdff7');
-
-    // Sol pixelado
-    rect(792, 36, 38, 38, '#ffe18a');
-    rect(782, 46, 58, 18, '#ffe18a');
-    rect(802, 26, 18, 58, '#ffe18a');
-
-    // Nuvens em diferentes distâncias
-    for (let i = 0; i < 5; i++) {
-      let x = ((i * 245 - sceneryOffset * 0.13) % 1200 + 1200) % 1200 - 100;
-      const y = 42 + (i % 3) * 35;
-      const s = i % 2 ? 1 : 1.35;
-
-      rect(x + 20 * s, y, 45 * s, 10 * s, '#dff5ff');
-      rect(x + 5 * s, y + 10 * s, 75 * s, 10 * s, '#ffffff');
-      rect(x + 25 * s, y - 10 * s, 25 * s, 10 * s, '#ffffff');
-      rect(x + 15 * s, y + 20 * s, 45 * s, 5 * s, '#bceafa');
-    }
-  }
-
-  function drawTree(x, y, scale = 1) {
-    rect(x + 12 * scale, y + 30 * scale,
-      12 * scale, 50 * scale, '#704832');
-
-    rect(x, y + 8 * scale,
-      36 * scale, 26 * scale, '#277e43');
-
-    rect(x + 5 * scale, y,
-      26 * scale, 26 * scale, '#38a653');
-
-    rect(x + 9 * scale, y + 5 * scale,
-      8 * scale, 8 * scale, '#8bd45b');
-
-    rect(x + 23 * scale, y + 12 * scale,
-      7 * scale, 7 * scale, '#b0e76c');
-  }
-
-  function drawSchool() {
-    // Morros e vegetação distantes
-    rect(0, 202, W, 43, '#83cb89');
-    rect(0, 232, W, 42, '#5bb778');
-
-    // Escola em perspectiva, distante do jogador
-    // A fachada ocupa o fundo, sem encobrir a pista.
-    const bx = 275;
-    const by = 168;
-    const bw = 500;
-    const bh = 101;
-
-    // Bloco lateral
-    rect(bx - 65, by + 24, 65, 76, '#dce8ed');
-    rect(bx - 65, by + 24, 65, 8, '#f6a04d');
-    rect(bx - 65, by + 32, 8, 68, '#a5c1d0');
-
-    // Prédio principal
-    rect(bx, by, bw, bh, '#d8e1e5');
-    rect(bx, by, bw, 12, '#f28c32');
-    rect(bx + 8, by + 12, bw - 16, 8, '#f9b34b');
-
-    // Telhado azul em blocos
-    rect(bx, by - 17, bw, 17, '#2563a5');
-    for (let x = bx + 8; x < bx + bw; x += 35) {
-      rect(x, by - 15, 2, 13, '#4488c8');
-    }
-
-    // Janelas
-    for (let x = bx + 22; x < bx + 150; x += 35) {
-      rect(x, by + 37, 17, 24, '#52bdf0');
-      rect(x + 5, by + 37, 3, 24, '#b4eaff');
-    }
-
-    for (let x = bx + 340; x < bx + 480; x += 35) {
-      rect(x, by + 37, 17, 24, '#52bdf0');
-      rect(x + 5, by + 37, 3, 24, '#b4eaff');
-    }
-
-    // Entrada principal
-    rect(bx + 183, by + 29, 126, 72, '#52677c');
-    rect(bx + 193, by + 39, 106, 62, '#d5e4e9');
-    rect(bx + 205, by + 46, 81, 55, '#7ac8e9');
-    rect(bx + 241, by + 46, 7, 55, '#dce8ed');
-
-    // Logo simplificada na fachada
-    pixelText('start', bx + 246, by + 82, 28, '#142749');
-    rect(bx + 246, by + 49, 5, 13, '#35d8cc');
-    pixelText('anglo bilingual school',
-      bx + 246, by + 94, 7, '#142749');
-
-    // Jardins e árvores, com movimento lento
-    for (let i = 0; i < 6; i++) {
-      const x = ((i * 190 - sceneryOffset * 0.32) % 1200 + 1200) % 1200 - 90;
-      drawTree(x, 207 + (i % 2) * 7, i % 2 ? 1.0 : 1.25);
-    }
-
-    // Cerca
-    rect(0, 258, W, 3, '#c9e5eb');
-    rect(0, 267, W, 3, '#c9e5eb');
-
-    for (let x = 0; x < W; x += 40) {
-      rect(x, 250, 3, 24, '#e5f3f7');
+    if (imagesLoaded >= 1 && bgImg.width > 0) {
+      // Proporção para fazer a escola caber bem na tela
+      const scale = (GROUND + 20) / bgImg.height; 
+      const scaledWidth = bgImg.width * scale;
+      
+      // Loop infinito da imagem de fundo movimentando-se BEM devagar
+      const offset = backgroundOffset % scaledWidth;
+      
+      ctx.drawImage(bgImg, -offset, 0, scaledWidth, GROUND + 20);
+      ctx.drawImage(bgImg, scaledWidth - offset, 0, scaledWidth, GROUND + 20);
     }
   }
 
   function drawTrack() {
-    // Gramado
-    rect(0, 274, W, 31, '#36a965');
-    rect(0, 274, W, 6, '#9be66a');
+    // Asfalto principal
+    rect(0, GROUND, W, H - GROUND, '#2b313d');
+    
+    // Borda da calçada/pista
+    rect(0, GROUND, W, 8, '#59657a');
+    rect(0, GROUND + 8, W, 4, '#1f242e');
 
-    // Faixa de grama pixelada
-    for (let i = 0; i < 32; i++) {
-      const x = ((i * 37 - sceneryOffset * 1.1) % 1000 + 1000) % 1000;
-      rect(x, 285 + (i % 3) * 3, 4, 3, i % 2 ? '#65d879' : '#2a9455');
-    }
-
-    // Asfalto
-    rect(0, GROUND, W, H - GROUND, '#24425b');
-    rect(0, GROUND, W, 5, '#d5ecf4');
-    rect(0, GROUND + 5, W, 3, '#182d45');
-
-    // Marcas da pista
-    for (let i = 0; i < 12; i++) {
-      const x = ((i * 100 - sceneryOffset * 1.2) % 1100 + 1100) % 1100 - 40;
-      rect(x, 349, 42, 4, '#86a6bb');
-    }
-
-    // Pequenos detalhes na calçada
-    for (let i = 0; i < 30; i++) {
-      const x = ((i * 43 - sceneryOffset * 0.8) % 1000 + 1000) % 1000;
-      rect(x, 388, 12, 3, '#35546a');
+    // Faixas brancas de corrida passando rapidamente (Floor Offset)
+    for (let i = 0; i < 15; i++) {
+      const x = ((i * 120 - floorOffset) % 1200 + 1200) % 1200 - 100;
+      rect(x, GROUND + 35, 60, 8, '#a6b0c2');
     }
   }
 
-  // Joey feito inteiramente de pixels.
-  // As posições dos braços e das pernas mudam em cada passada.
   function drawJoey() {
-    const x = Math.round(cat.x);
-    const y = Math.round(cat.y);
-    const airborne = !cat.onGround;
-    const pose = airborne ? 0 : Math.floor(cat.runFrame / 5) % 2;
+    if (imagesLoaded < 2 || catImg.width === 0) return;
 
-    // Sombra
-    ctx.globalAlpha = airborne ? 0.25 : 0.45;
-    rect(x - 2, GROUND - 2, 48, 5, '#172d3a');
+    // Sombra abaixo do personagem
+    ctx.globalAlpha = cat.onGround ? 0.4 : 0.15;
+    rect(cat.x + 10, GROUND - 5, cat.w - 20, 8, '#000000');
     ctx.globalAlpha = 1;
 
-    // Cauda
-    rect(x - 4, y + 44, 10, 8, '#c97a30');
-    rect(x - 10, y + 37, 10, 9, '#f5a340');
-    rect(x - 13, y + 29, 8, 10, '#f5a340');
-    rect(x - 10, y + 31, 5, 4, '#9c542b');
-
-    // Orelhas
-    rect(x + 3, y + 3, 12, 15, '#d88a39');
-    rect(x + 27, y + 3, 12, 15, '#d88a39');
-    rect(x + 6, y + 6, 6, 8, '#f7b2a0');
-    rect(x + 30, y + 6, 6, 8, '#f7b2a0');
-
-    // Cabeça e laterais
-    rect(x + 3, y + 12, 36, 31, '#f5a340');
-    rect(x + 7, y + 8, 28, 32, '#ffba58');
-    rect(x + 3, y + 24, 5, 12, '#d88a39');
-    rect(x + 34, y + 24, 5, 12, '#d88a39');
-
-    // Olhos
-    rect(x + 8, y + 19, 10, 12, '#fffaf0');
-    rect(x + 24, y + 19, 10, 12, '#fffaf0');
-    rect(x + 12, y + 21, 6, 8, '#15985a');
-    rect(x + 25, y + 21, 6, 8, '#15985a');
-    rect(x + 14, y + 22, 3, 5, '#152b29');
-    rect(x + 26, y + 22, 3, 5, '#152b29');
-    rect(x + 12, y + 21, 3, 3, '#ffffff');
-    rect(x + 25, y + 21, 3, 3, '#ffffff');
-
-    // Focinho e nariz
-    rect(x + 13, y + 32, 17, 8, '#ffe2b0');
-    rect(x + 18, y + 30, 7, 4, '#804b38');
-    rect(x + 17, y + 37, 9, 3, '#713d35');
-
-    // Camiseta branca com detalhes azuis
-    rect(x + 8, y + 44, 27, 19, '#f7f7ef');
-    rect(x + 8, y + 44, 27, 4, '#168bd0');
-    rect(x + 8, y + 48, 4, 14, '#188bd0');
-    rect(x + 31, y + 48, 4, 14, '#188bd0');
-
-    // Pequeno emblema da escola
-    rect(x + 19, y + 49, 7, 6, '#152749');
-    rect(x + 21, y + 49, 3, 4, '#35d8cc');
-
-    // Braços alternam durante a corrida
-    if (pose === 0) {
-      rect(x + 1, y + 46, 8, 14, '#f5a340');
-      rect(x + 2, y + 58, 8, 6, '#ffba58');
-      rect(x + 32, y + 49, 8, 10, '#f5a340');
-      rect(x + 35, y + 56, 7, 6, '#ffba58');
-    } else {
-      rect(x + 2, y + 49, 8, 10, '#f5a340');
-      rect(x - 1, y + 56, 8, 6, '#ffba58');
-      rect(x + 33, y + 46, 8, 13, '#f5a340');
-      rect(x + 36, y + 43, 7, 6, '#ffba58');
+    // Animação procedural: faz o personagem "pular" sutilmente enquanto corre
+    let bobbing = 0;
+    if (cat.onGround && running) {
+      bobbing = Math.abs(Math.sin(frame * 0.4)) * 6; // Balança até 6 pixels
     }
 
-    // Shorts azuis
-    rect(x + 10, y + 62, 24, 7, '#1479c6');
-    rect(x + 10, y + 64, 11, 6, '#168bdc');
-    rect(x + 23, y + 64, 11, 6, '#168bdc');
-
-    // Pernas animadas
-    if (airborne) {
-      rect(x + 12, y + 69, 7, 5, '#d88a39');
-      rect(x + 25, y + 68, 7, 6, '#d88a39');
-      rect(x + 7, y + 70, 12, 6, '#187fc7');
-      rect(x + 25, y + 70, 13, 6, '#187fc7');
-    } else if (pose === 0) {
-      rect(x + 13, y + 68, 7, 6, '#d88a39');
-      rect(x + 25, y + 68, 7, 3, '#d88a39');
-      rect(x + 12, y + 72, 13, 6, '#168bdc');
-      rect(x + 25, y + 69, 11, 8, '#168bdc');
-    } else {
-      rect(x + 13, y + 68, 7, 3, '#d88a39');
-      rect(x + 25, y + 68, 7, 6, '#d88a39');
-      rect(x + 8, y + 69, 12, 8, '#168bdc');
-      rect(x + 25, y + 72, 14, 6, '#168bdc');
-    }
-
-    // Tênis
-    rect(x + 7, y + 75, 16, 5, '#f7f7ef');
-    rect(x + 25, y + 75, 16, 5, '#f7f7ef');
-    rect(x + 7, y + 74, 16, 2, '#1c83c8');
-    rect(x + 25, y + 74, 16, 2, '#1c83c8');
-  }
-
-  function obstacleSpecs(type) {
-    const specs = [
-      { w: 27, h: 31, color: '#ed8c37' }, // caixa
-      { w: 24, h: 35, color: '#f45f89' }, // mochila
-      { w: 24, h: 39, color: '#e94d45' }, // livros
-      { w: 22, h: 32, color: '#f5c842' }, // cone
-      { w: 35, h: 25, color: '#7f70d6' }, // pilha de livros
-      { w: 33, h: 30, color: '#44a6d9' }  // caixa escolar
-    ];
-    return specs[type];
+    ctx.drawImage(
+      catImg, 
+      Math.round(cat.x), 
+      Math.round(cat.y - bobbing), 
+      cat.w, 
+      cat.h
+    );
   }
 
   function drawObstacle(o) {
-    const { x, y, w, h, type } = o;
-    const c = obstacleSpecs(type).color;
+    // Sombra do obstáculo
+    ctx.globalAlpha = 0.3;
+    rect(o.x - 5, GROUND - 5, o.w + 10, 8, '#000000');
+    ctx.globalAlpha = 1;
 
-    // Sombra
-    rect(x - 3, GROUND - 2, w + 7, 4, '#182b3b');
-
-    if (type === 0) {
-      // Caixa
-      rect(x, y, w, h, '#bd682e');
-      rect(x + 3, y + 3, w - 6, h - 6, '#f4a34b');
-      rect(x + w / 2 - 2, y + 3, 4, h - 6, '#a65a2c');
-      rect(x + 3, y + h / 2, w - 6, 3, '#a65a2c');
-    } else if (type === 1) {
-      // Mochila
-      rect(x + 4, y, w - 8, 5, '#ad3e69');
-      rect(x, y + 6, w, h - 8, '#ed4f82');
-      rect(x + 4, y + 9, w - 8, h - 14, '#ff83a8');
-      rect(x + 8, y + 14, w - 16, 8, '#ffd166');
-      rect(x + 7, y + h - 3, 4, 4, '#a83262');
-      rect(x + w - 11, y + h - 3, 4, 4, '#a83262');
-    } else if (type === 2) {
-      // Livros empilhados
-      rect(x, y + 12, w, h - 12, '#e24e42');
-      rect(x + 3, y + 15, w - 6, 5, '#ffe6a8');
-      rect(x + 2, y + 22, w - 4, 5, '#f5be48');
-      rect(x + 3, y + 29, w - 6, 5, '#ffe6a8');
-      rect(x + 3, y, w - 6, 12, '#4b90d2');
-      rect(x + 6, y + 3, w - 12, 6, '#9cd8ff');
-    } else if (type === 3) {
+    // Obstáculos Redesenhados (Caixas e Cones mais modernos)
+    if (o.type === 0) {
+      // Caixa de madeira
+      rect(o.x, o.y, o.w, o.h, '#8a5c36');
+      rect(o.x + 4, o.y + 4, o.w - 8, o.h - 8, '#a37145');
+      rect(o.x + 4, o.y + o.h/2 - 2, o.w - 8, 4, '#734a29');
+    } else if (o.type === 1) {
       // Cone
-      rect(x + 9, y, 5, 6, '#ffdf72');
-      rect(x + 6, y + 6, 11, 7, '#f6a32c');
-      rect(x + 3, y + 13, 17, 9, '#f6a32c');
-      rect(x, y + 22, w, 7, '#ff8a35');
-      rect(x - 2, y + h - 3, w + 4, 5, '#d86e27');
-      rect(x + 5, y + 15, 13, 3, '#fff0c5');
-    } else if (type === 4) {
-      // Livros horizontais
-      rect(x, y + 16, w, 9, '#6f62c9');
-      rect(x + 3, y + 17, w - 6, 3, '#b8b2ff');
-      rect(x + 4, y + 6, w - 4, 10, '#e85e72');
-      rect(x + 7, y + 8, w - 10, 3, '#ffd1b4');
-      rect(x + 2, y, w - 5, 6, '#4c9ed6');
+      rect(o.x + 10, o.y, o.w - 20, 6, '#ffaa00');
+      rect(o.x + 6, o.y + 6, o.w - 12, o.h - 16, '#ff5500');
+      rect(o.x + 6, o.y + 12, o.w - 12, 10, '#ffffff'); // Faixa branca
+      rect(o.x, o.y + o.h - 10, o.w, 10, '#ff5500'); // Base
     } else {
-      // Caixa escolar
-      rect(x, y, w, h, '#317ba7');
-      rect(x + 4, y + 4, w - 8, h - 8, '#53bce5');
-      rect(x + 7, y + 8, w - 14, 9, '#e8f6ff');
-      rect(x + 12, y + 10, 9, 5, '#317ba7');
-      rect(x + 5, y + h - 5, w - 10, 3, '#235b86');
-    }
-
-    // Pequenos detalhes coloridos para dar acabamento
-    if (type !== 3) {
-      rect(x + 2, y + 2, 3, 3, c);
+      // Mochila Escolar Start
+      rect(o.x + 5, o.y, o.w - 10, 8, '#0d47a1'); // Alça
+      rect(o.x, o.y + 8, o.w, o.h - 8, '#1976d2'); // Corpo
+      rect(o.x + 5, o.y + 15, o.w - 10, o.h - 20, '#64b5f6'); // Bolso
+      rect(o.x + 12, o.y + 20, 10, 4, '#ffffff'); // Zíper
     }
   }
 
-  function drawOverlay(title, subtitle, thirdLine = '') {
-    rect(190, 119, 580, 112, '#10182e');
-    rect(190, 119, 580, 4, '#ffd166');
-    rect(190, 227, 580, 4, '#ffd166');
-    rect(190, 123, 4, 104, '#ffd166');
-    rect(766, 123, 4, 104, '#ffd166');
+  function drawOverlay(title, subtitle) {
+    // Fundo escuro semitransparente para dar destaque ao texto
+    ctx.fillStyle = 'rgba(11, 17, 32, 0.8)';
+    ctx.fillRect(0, 0, W, H);
+    
+    // Caixa de destaque
+    rect(W/2 - 250, H/2 - 60, 500, 120, '#192541');
+    rect(W/2 - 250, H/2 - 60, 500, 4, '#4debd8'); // Borda ciano superior
+    rect(W/2 - 250, H/2 + 56, 500, 4, '#4debd8'); // Borda ciano inferior
 
-    pixelText(title, W / 2, 163, 29, '#ffd166');
-    pixelText(subtitle, W / 2, 193, 15, '#ffffff');
-
-    if (thirdLine) {
-      pixelText(thirdLine, W / 2, 214, 11, '#a9e9e7');
-    }
+    pixelText(title, W / 2, H/2 + 5, 36, '#ffd166');
+    pixelText(subtitle, W / 2, H/2 + 35, 18, '#ffffff');
   }
 
   function render() {
-    drawSky();
-    drawSchool();
+    drawBackground();
     drawTrack();
 
     obstacles.forEach(drawObstacle);
     drawJoey();
 
     if (!running && !ended) {
-      drawOverlay('JOEY RUNNER', 'APERTE COMEÇAR', 'PREPARE-SE PARA A AVENTURA!');
+      drawOverlay('JOEY RUNNER', 'CLIQUE EM COMEÇAR');
     }
-
     if (ended) {
-      drawOverlay('FIM DE JOGO!', 'PONTUAÇÃO: ' + fmt(score), 'TENTE BATER SEU RECORDE!');
+      drawOverlay('FIM DE JOGO!', 'PONTUAÇÃO: ' + fmt(score));
     }
   }
 
   function jump() {
     if (!running || !cat.onGround) return;
-
-    cat.vy = -13.1;
+    cat.vy = -14.5; // Ajustado para salto agradável
     cat.onGround = false;
   }
 
@@ -770,9 +545,10 @@ footer strong { color: var(--cyan); }
     ended = false;
     frame = 0;
     score = 0;
-    speed = 6;
-    sceneryOffset = 0;
-    distanceToNext = 390;
+    speed = 7.5;
+    backgroundOffset = 0;
+    floorOffset = 0;
+    distanceToNext = 500;
     obstacles = [];
     accumulator = 0;
     lastTime = 0;
@@ -781,10 +557,9 @@ footer strong { color: var(--cyan); }
     cat.y = GROUND - cat.h;
     cat.vy = 0;
     cat.onGround = true;
-    cat.runFrame = 0;
 
     saveButton.disabled = true;
-    startButton.textContent = '↻ JOGAR NOVAMENTE';
+    startButton.textContent = '↻ REINICIAR';
     scoreText.textContent = fmt(0);
     message.textContent = 'Boa sorte! Desvie dos obstáculos.';
 
@@ -793,7 +568,6 @@ footer strong { color: var(--cyan); }
 
   function finish() {
     if (!running) return;
-
     running = false;
     ended = true;
 
@@ -805,99 +579,74 @@ footer strong { color: var(--cyan); }
     bestText.textContent = fmt(best);
     saveButton.disabled = false;
     message.textContent = 'Digite seu nome para registrar esta pontuação.';
-
-    startButton.textContent = '↻ JOGAR NOVAMENTE';
     render();
   }
 
-  // Cria sequências diferentes, com intervalos que variam
-  // conforme a velocidade e o tempo de partida.
   function spawnObstacle() {
-    const difficulty = Math.min(1, frame / 3000);
-    const type = Math.floor(Math.random() * 6);
-    const spec = obstacleSpecs(type);
+    const type = Math.floor(Math.random() * 3);
+    
+    // Dimensões variadas para as caixas, cones e mochilas
+    const sizes = [
+      { w: 38, h: 38 }, 
+      { w: 34, h: 45 }, 
+      { w: 36, h: 40 }
+    ];
+    
+    const spec = sizes[type];
 
     obstacles.push({
-      x: W + 10,
+      x: W + 20,
       y: GROUND - spec.h,
       w: spec.w,
       h: spec.h,
-      type
+      type: type
     });
 
-    // Aumenta a chance de combinações conforme o jogo avança.
-    const clusterChance = 0.12 + difficulty * 0.20;
-
-    if (Math.random() < clusterChance) {
-      const gap = 75 + Math.random() * 50;
-      const secondType = Math.floor(Math.random() * 6);
-      const second = obstacleSpecs(secondType);
-
-      obstacles.push({
-        x: W + 10 + spec.w + gap,
-        y: GROUND - second.h,
-        w: second.w,
-        h: second.h,
-        type: secondType
-      });
-
-      // Combinações de três aparecem apenas mais tarde.
-      if (difficulty > 0.65 && Math.random() < 0.20) {
-        const thirdType = Math.floor(Math.random() * 6);
-        const third = obstacleSpecs(thirdType);
-
-        obstacles.push({
-          x: W + 10 + spec.w + gap + second.w + 85,
-          y: GROUND - third.h,
-          w: third.w,
-          h: third.h,
-          type: thirdType
-        });
-      }
-
-      distanceToNext = 310 + Math.random() * 160;
-    } else {
-      // Espaçamento variável para evitar um ritmo previsível.
-      const minimum = Math.max(220, 340 - difficulty * 45);
-      const maximum = 460 + Math.random() * 190;
-      distanceToNext = minimum + Math.random() * (maximum - minimum);
-    }
+    // Varia a distância do próximo obstáculo com base na velocidade atual
+    const minDistance = 350;
+    const extraDistance = Math.random() * 300;
+    distanceToNext = minDistance + extraDistance;
   }
 
   function intersects(a, b) {
-    // Hitboxes um pouco menores que os desenhos
-    // para deixar os saltos justos e agradáveis.
-    const ax = a.x + 7;
-    const ay = a.y + 5;
-    const aw = a.w - 13;
-    const ah = a.h - 7;
+    // HITBOX AJUSTADA: 
+    // Como a imagem do gato JPEG tem espaço vazio ao redor, 
+    // reduzimos a zona de colisão drasticamente para ser justa.
+    const hitboxMarginX = 25; 
+    const hitboxMarginY = 15;
 
-    const bx = b.x + 3;
-    const by = b.y + 2;
-    const bw = b.w - 6;
-    const bh = b.h - 2;
+    const ax = a.x + hitboxMarginX;
+    const ay = a.y + hitboxMarginY;
+    const aw = a.w - (hitboxMarginX * 2);
+    const ah = a.h - hitboxMarginY;
+
+    // Obstáculo hitbox (ligeiramente menor que o desenho também)
+    const bx = b.x + 5;
+    const by = b.y + 5;
+    const bw = b.w - 10;
+    const bh = b.h - 5;
 
     return ax < bx + bw &&
-      ax + aw > bx &&
-      ay < by + bh &&
-      ay + ah > by;
+           ax + aw > bx &&
+           ay < by + bh &&
+           ay + ah > by;
   }
 
   function update() {
     if (!running) return;
-
     frame++;
 
-    // Velocidade inicial mais rápida, com aumento gradual.
-    speed = Math.min(10.5, 6 + frame / 1050);
+    // Aumento gradual de velocidade
+    speed = Math.min(13, 7.5 + frame / 800);
 
-    sceneryOffset += speed;
-    score = Math.floor(frame / 3);
+    // Parallax: Fundo move BEM devagar, Chão move rápido
+    backgroundOffset += speed * 0.15; 
+    floorOffset += speed;
+    
+    score = Math.floor(frame / 4);
 
-    cat.runFrame++;
-
-    // Gravidade e salto
-    cat.vy += 0.62;
+    // Física
+    cat.vy += 0.7; // Gravidade
     cat.y += cat.vy;
 
     if (cat.y >= GROUND - cat.h) {
@@ -907,16 +656,10 @@ footer strong { color: var(--cyan); }
     }
 
     distanceToNext -= speed;
+    if (distanceToNext <= 0) spawnObstacle();
 
-    if (distanceToNext <= 0) {
-      spawnObstacle();
-    }
-
-    obstacles.forEach(o => {
-      o.x -= speed;
-    });
-
-    obstacles = obstacles.filter(o => o.x + o.w > -10);
+    obstacles.forEach(o => o.x -= speed);
+    obstacles = obstacles.filter(o => o.x + o.w > -20);
 
     for (const obstacle of obstacles) {
       if (intersects(cat, obstacle)) {
@@ -924,15 +667,11 @@ footer strong { color: var(--cyan); }
         break;
       }
     }
-
     scoreText.textContent = fmt(score);
   }
 
-  // Temporizador independente da taxa de atualização do monitor.
-  // Mantém a física consistente em telas de 60, 120 ou 144 Hz.
   function loop(timestamp) {
     if (!lastTime) lastTime = timestamp;
-
     const delta = Math.min(timestamp - lastTime, 100);
     lastTime = timestamp;
     accumulator += delta;
@@ -941,7 +680,6 @@ footer strong { color: var(--cyan); }
       update();
       accumulator -= STEP;
     }
-
     render();
     requestAnimationFrame(loop);
   }
@@ -964,7 +702,7 @@ footer strong { color: var(--cyan); }
 
     scores.forEach((item, index) => {
       const li = document.createElement('li');
-
+      
       const rank = document.createElement('span');
       rank.className = 'rank-number';
       rank.textContent = ['🥇', '🥈', '🥉'][index] || (index + 1) + '.';
@@ -986,7 +724,6 @@ footer strong { color: var(--cyan); }
     if (!ended || gameOverSaved) return;
 
     const name = playerInput.value.trim().slice(0, 18);
-
     if (!name) {
       message.textContent = 'Digite seu nome ou apelido antes de salvar.';
       playerInput.focus();
@@ -995,7 +732,6 @@ footer strong { color: var(--cyan); }
 
     const scores = readRanking();
     scores.push({ name, score });
-
     scores.sort((a, b) => Number(b.score) - Number(a.score));
 
     if (!saveLocal('joeyRanking', JSON.stringify(scores.slice(0, 50)))) {
@@ -1006,9 +742,7 @@ footer strong { color: var(--cyan); }
     gameOverSaved = true;
     saveButton.disabled = true;
     showRanking();
-
-    message.textContent =
-      'Pontuação registrada neste navegador! O ranking ainda é local.';
+    message.textContent = 'Pontuação registrada neste navegador!';
   });
 
   startButton.addEventListener('click', start);
@@ -1020,12 +754,9 @@ footer strong { color: var(--cyan); }
   });
 
   window.addEventListener('keydown', event => {
-    if (event.code === 'Space' || event.code === 'ArrowUp' ||
-        event.code === 'KeyW') {
+    if (event.code === 'Space' || event.code === 'ArrowUp' || event.code === 'KeyW') {
       if (event.target instanceof HTMLInputElement) return;
-
       event.preventDefault();
-
       if (!running && !ended) start();
       else jump();
     }
