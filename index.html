@@ -11,7 +11,6 @@
 
 :root {
   --bg: #0b1120;
-  --panel: #192541;
   --cyan: #4debd8;
   --gold: #ffd166;
   --white: #f4f7ff;
@@ -37,7 +36,7 @@ header { max-width: 900px; margin: 0 auto 24px; }
   width: 130px;
   height: auto;
   object-fit: contain;
-  margin: 0 auto 22px;
+  margin: 0 auto 16px;
 }
 
 .eyebrow {
@@ -82,7 +81,7 @@ main {
   overflow: hidden;
   border: 4px solid #34476d;
   border-radius: 12px;
-  background: #5ab2e6; /* Cor do céu caso a imagem não cubra tudo */
+  background: #65c8f5; /* Cor do céu */
   box-shadow: 0 10px 0 rgba(0,0,0,0.2);
   position: relative;
 }
@@ -323,9 +322,7 @@ footer strong { color: var(--cyan); }
 
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
-  
-  // Garante a nitidez do pixel art no canvas
-  ctx.imageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false; // Garante pixels nítidos
 
   const $ = id => document.getElementById(id);
   const scoreText = $('score');
@@ -337,28 +334,20 @@ footer strong { color: var(--cyan); }
   const rankingList = $('ranking');
   const message = $('message');
 
-  // Configurações do Jogo
   const W = 960;
   const H = 400;
-  const GROUND = 330; // Chão rebaixado para mostrar mais a escola
-  const CAT_X = 120;
+  const GROUND = 310;
+  const CAT_X = 115;
 
-  // Carregamento de Imagens do Repositório
+  // Imagem de fundo 100% estática
   const bgImg = new Image();
   bgImg.src = 'escola-fundo.png'; 
   
-  const catImg = new Image();
-  // NOTA: Para remover o fundo preto, transforme este arquivo em PNG transparente
-  // e altere o nome aqui para 'Mascote pixel.png'
-  catImg.src = 'Mascote pixel.jpeg'; 
-
-  let imagesLoaded = 0;
-  function onImageLoad() {
-    imagesLoaded++;
-    if (imagesLoaded === 2) render(); // Desenha a tela inicial assim que carregar
-  }
-  bgImg.onload = onImageLoad;
-  catImg.onload = onImageLoad;
+  let bgLoaded = false;
+  bgImg.onload = () => {
+    bgLoaded = true;
+    render();
+  };
 
   let running = false;
   let ended = false;
@@ -367,11 +356,8 @@ footer strong { color: var(--cyan); }
   let speed = 7;
   let distanceToNext = 400;
   let obstacles = [];
-  
-  // Separamos as velocidades para evitar enjoo (Parallax)
-  let backgroundOffset = 0; 
+  let birds = [];
   let floorOffset = 0;
-
   let lastTime = 0;
   let accumulator = 0;
   let gameOverSaved = false;
@@ -381,18 +367,18 @@ footer strong { color: var(--cyan); }
   let best = readNumber('joeyBest');
   bestText.textContent = fmt(best);
 
+  // Status do boneco procedural
   const cat = {
     x: CAT_X,
-    y: GROUND - 95,
+    y: GROUND - 74,
     vy: 0,
-    w: 80, // Largura renderizada do mascote
-    h: 95, // Altura renderizada do mascote
-    onGround: true
+    w: 42,
+    h: 74,
+    onGround: true,
+    runFrame: 0
   };
 
-  function fmt(n) {
-    return String(Math.floor(n)).padStart(5, '0');
-  }
+  function fmt(n) { return String(Math.floor(n)).padStart(5, '0'); }
 
   function readNumber(key) {
     try { return Math.max(0, Number(localStorage.getItem(key)) || 0); } 
@@ -424,96 +410,177 @@ footer strong { color: var(--cyan); }
   }
 
   function drawBackground() {
-    // Fundo azul limpo padrão caso a imagem não carregue a tempo
-    rect(0, 0, W, H, '#5ab2e6');
+    rect(0, 0, W, H, '#65c8f5'); // Fundo azul caso a imagem atrase
 
-    if (imagesLoaded >= 1 && bgImg.width > 0) {
-      // Proporção para fazer a escola caber bem na tela
-      const scale = (GROUND + 20) / bgImg.height; 
-      const scaledWidth = bgImg.width * scale;
-      
-      // Loop infinito da imagem de fundo movimentando-se BEM devagar
-      const offset = backgroundOffset % scaledWidth;
-      
-      ctx.drawImage(bgImg, -offset, 0, scaledWidth, GROUND + 20);
-      ctx.drawImage(bgImg, scaledWidth - offset, 0, scaledWidth, GROUND + 20);
+    if (bgLoaded) {
+      // Desenha a imagem da escola de forma sólida e estática
+      // Esticamos a largura para preencher a tela, e a altura até a linha do chão
+      ctx.drawImage(bgImg, 0, 0, W, GROUND + 20);
     }
+  }
+
+  function drawBirds() {
+    birds.forEach(b => {
+      // Pássaros feitos de blocos pixelados
+      ctx.fillStyle = '#2b364a';
+      rect(b.x, b.y, 6, 2, '#2b364a'); // Corpo
+      
+      // Bate as asas dependendo do frame
+      if (b.wing === 0) {
+        rect(b.x - 2, b.y - 3, 2, 3, '#2b364a');
+        rect(b.x + 4, b.y - 3, 2, 3, '#2b364a');
+      } else {
+        rect(b.x - 2, b.y + 2, 2, 3, '#2b364a');
+        rect(b.x + 4, b.y + 2, 2, 3, '#2b364a');
+      }
+    });
   }
 
   function drawTrack() {
-    // Asfalto principal
-    rect(0, GROUND, W, H - GROUND, '#2b313d');
-    
-    // Borda da calçada/pista
-    rect(0, GROUND, W, 8, '#59657a');
-    rect(0, GROUND + 8, W, 4, '#1f242e');
+    // Chão móvel (asfalto e grama)
+    rect(0, GROUND, W, H - GROUND, '#243042');
+    rect(0, GROUND, W, 6, '#495b73');
+    rect(0, GROUND + 6, W, 4, '#1b2433');
 
-    // Faixas brancas de corrida passando rapidamente (Floor Offset)
+    // Faixas brancas que dão a sensação de velocidade
     for (let i = 0; i < 15; i++) {
       const x = ((i * 120 - floorOffset) % 1200 + 1200) % 1200 - 100;
-      rect(x, GROUND + 35, 60, 8, '#a6b0c2');
+      rect(x, GROUND + 40, 50, 6, '#8e9eab');
     }
   }
 
+  // O Mascote 100% Procedural recriado (Anima pernas e braços)
   function drawJoey() {
-    if (imagesLoaded < 2 || catImg.width === 0) return;
+    const x = Math.round(cat.x);
+    const y = Math.round(cat.y);
+    const airborne = !cat.onGround;
+    const pose = airborne ? 0 : Math.floor(cat.runFrame / 5) % 2;
 
-    // Sombra abaixo do personagem
-    ctx.globalAlpha = cat.onGround ? 0.4 : 0.15;
-    rect(cat.x + 10, GROUND - 5, cat.w - 20, 8, '#000000');
+    // Sombra
+    ctx.globalAlpha = airborne ? 0.2 : 0.4;
+    rect(x - 2, GROUND - 2, 48, 6, '#0f1721');
     ctx.globalAlpha = 1;
 
-    // Animação procedural: faz o personagem "pular" sutilmente enquanto corre
-    let bobbing = 0;
-    if (cat.onGround && running) {
-      bobbing = Math.abs(Math.sin(frame * 0.4)) * 6; // Balança até 6 pixels
+    // Cauda
+    rect(x - 4, y + 44, 10, 8, '#c97a30');
+    rect(x - 10, y + 37, 10, 9, '#f5a340');
+    rect(x - 13, y + 29, 8, 10, '#f5a340');
+    rect(x - 10, y + 31, 5, 4, '#9c542b');
+
+    // Orelhas
+    rect(x + 3, y + 3, 12, 15, '#d88a39');
+    rect(x + 27, y + 3, 12, 15, '#d88a39');
+    rect(x + 6, y + 6, 6, 8, '#f7b2a0');
+    rect(x + 30, y + 6, 6, 8, '#f7b2a0');
+
+    // Cabeça
+    rect(x + 3, y + 12, 36, 31, '#f5a340');
+    rect(x + 7, y + 8, 28, 32, '#ffba58');
+    rect(x + 3, y + 24, 5, 12, '#d88a39');
+    rect(x + 34, y + 24, 5, 12, '#d88a39');
+
+    // Olhos Verdes (como na referência)
+    rect(x + 8, y + 19, 10, 12, '#ffffff');
+    rect(x + 24, y + 19, 10, 12, '#ffffff');
+    rect(x + 12, y + 21, 6, 8, '#12a344');
+    rect(x + 25, y + 21, 6, 8, '#12a344');
+    rect(x + 14, y + 22, 3, 5, '#093d18');
+    rect(x + 26, y + 22, 3, 5, '#093d18');
+    rect(x + 12, y + 21, 3, 3, '#ffffff');
+    rect(x + 25, y + 21, 3, 3, '#ffffff');
+
+    // Focinho e nariz
+    rect(x + 13, y + 32, 17, 8, '#ffe2b0');
+    rect(x + 18, y + 30, 7, 4, '#804b38');
+    rect(x + 17, y + 37, 9, 3, '#713d35');
+
+    // Camiseta branca da Start
+    rect(x + 8, y + 44, 27, 19, '#f7f7ef');
+    rect(x + 8, y + 44, 27, 4, '#168bd0');
+    rect(x + 8, y + 48, 4, 14, '#188bd0');
+    rect(x + 31, y + 48, 4, 14, '#188bd0');
+    rect(x + 19, y + 49, 7, 6, '#152749'); // logo
+    rect(x + 21, y + 49, 3, 4, '#35d8cc');
+
+    // Movimentação procedural dos braços
+    if (pose === 0) {
+      rect(x + 1, y + 46, 8, 14, '#f5a340');
+      rect(x + 2, y + 58, 8, 6, '#ffba58');
+      rect(x + 32, y + 49, 8, 10, '#f5a340');
+      rect(x + 35, y + 56, 7, 6, '#ffba58');
+    } else {
+      rect(x + 2, y + 49, 8, 10, '#f5a340');
+      rect(x - 1, y + 56, 8, 6, '#ffba58');
+      rect(x + 33, y + 46, 8, 13, '#f5a340');
+      rect(x + 36, y + 43, 7, 6, '#ffba58');
     }
 
-    ctx.drawImage(
-      catImg, 
-      Math.round(cat.x), 
-      Math.round(cat.y - bobbing), 
-      cat.w, 
-      cat.h
-    );
+    // Shorts azuis
+    rect(x + 10, y + 62, 24, 7, '#1479c6');
+    rect(x + 10, y + 64, 11, 6, '#168bdc');
+    rect(x + 23, y + 64, 11, 6, '#168bdc');
+
+    // Movimentação procedural das pernas
+    if (airborne) { // Pose de pulo
+      rect(x + 12, y + 69, 7, 5, '#d88a39');
+      rect(x + 25, y + 68, 7, 6, '#d88a39');
+      rect(x + 7, y + 70, 12, 6, '#187fc7');
+      rect(x + 25, y + 70, 13, 6, '#187fc7');
+      // Tênis no ar
+      rect(x + 6, y + 75, 14, 5, '#f7f7ef');
+      rect(x + 25, y + 75, 14, 5, '#f7f7ef');
+    } else if (pose === 0) { // Passo 1
+      rect(x + 13, y + 68, 7, 6, '#d88a39');
+      rect(x + 25, y + 68, 7, 3, '#d88a39');
+      rect(x + 12, y + 72, 13, 6, '#168bdc');
+      rect(x + 25, y + 69, 11, 8, '#168bdc');
+      // Tênis passo 1
+      rect(x + 7, y + 76, 16, 5, '#f7f7ef');
+      rect(x + 25, y + 75, 16, 5, '#f7f7ef');
+    } else { // Passo 2
+      rect(x + 13, y + 68, 7, 3, '#d88a39');
+      rect(x + 25, y + 68, 7, 6, '#d88a39');
+      rect(x + 8, y + 69, 12, 8, '#168bdc');
+      rect(x + 25, y + 72, 14, 6, '#168bdc');
+      // Tênis passo 2
+      rect(x + 7, y + 75, 16, 5, '#f7f7ef');
+      rect(x + 25, y + 76, 16, 5, '#f7f7ef');
+    }
   }
 
   function drawObstacle(o) {
-    // Sombra do obstáculo
     ctx.globalAlpha = 0.3;
-    rect(o.x - 5, GROUND - 5, o.w + 10, 8, '#000000');
+    rect(o.x - 3, GROUND - 3, o.w + 6, 6, '#0f1721');
     ctx.globalAlpha = 1;
 
-    // Obstáculos Redesenhados (Caixas e Cones mais modernos)
     if (o.type === 0) {
-      // Caixa de madeira
+      // Caixa
       rect(o.x, o.y, o.w, o.h, '#8a5c36');
-      rect(o.x + 4, o.y + 4, o.w - 8, o.h - 8, '#a37145');
-      rect(o.x + 4, o.y + o.h/2 - 2, o.w - 8, 4, '#734a29');
+      rect(o.x + 3, o.y + 3, o.w - 6, o.h - 6, '#a37145');
+      rect(o.x + 3, o.y + o.h/2 - 2, o.w - 6, 3, '#734a29');
     } else if (o.type === 1) {
       // Cone
-      rect(o.x + 10, o.y, o.w - 20, 6, '#ffaa00');
-      rect(o.x + 6, o.y + 6, o.w - 12, o.h - 16, '#ff5500');
-      rect(o.x + 6, o.y + 12, o.w - 12, 10, '#ffffff'); // Faixa branca
-      rect(o.x, o.y + o.h - 10, o.w, 10, '#ff5500'); // Base
+      rect(o.x + 8, o.y, o.w - 16, 6, '#ffdf72');
+      rect(o.x + 4, o.y + 6, o.w - 8, o.h - 16, '#f6a32c');
+      rect(o.x + 4, o.y + 12, o.w - 8, 8, '#ffffff'); 
+      rect(o.x, o.y + o.h - 10, o.w, 10, '#d86e27');
     } else {
-      // Mochila Escolar Start
-      rect(o.x + 5, o.y, o.w - 10, 8, '#0d47a1'); // Alça
-      rect(o.x, o.y + 8, o.w, o.h - 8, '#1976d2'); // Corpo
-      rect(o.x + 5, o.y + 15, o.w - 10, o.h - 20, '#64b5f6'); // Bolso
-      rect(o.x + 12, o.y + 20, 10, 4, '#ffffff'); // Zíper
+      // Livros Empilhados
+      rect(o.x, o.y + 12, o.w, o.h - 12, '#e24e42');
+      rect(o.x + 2, y = o.y + 15, o.w - 4, 4, '#ffe6a8');
+      rect(o.x + 2, o.y + 22, o.w - 4, 4, '#f5be48');
+      rect(o.x + 2, o.y, o.w - 4, 12, '#4b90d2');
+      rect(o.x + 5, o.y + 3, o.w - 10, 6, '#9cd8ff');
     }
   }
 
   function drawOverlay(title, subtitle) {
-    // Fundo escuro semitransparente para dar destaque ao texto
-    ctx.fillStyle = 'rgba(11, 17, 32, 0.8)';
+    ctx.fillStyle = 'rgba(11, 17, 32, 0.75)';
     ctx.fillRect(0, 0, W, H);
     
-    // Caixa de destaque
     rect(W/2 - 250, H/2 - 60, 500, 120, '#192541');
-    rect(W/2 - 250, H/2 - 60, 500, 4, '#4debd8'); // Borda ciano superior
-    rect(W/2 - 250, H/2 + 56, 500, 4, '#4debd8'); // Borda ciano inferior
+    rect(W/2 - 250, H/2 - 60, 500, 4, '#4debd8'); 
+    rect(W/2 - 250, H/2 + 56, 500, 4, '#4debd8'); 
 
     pixelText(title, W / 2, H/2 + 5, 36, '#ffd166');
     pixelText(subtitle, W / 2, H/2 + 35, 18, '#ffffff');
@@ -521,6 +588,7 @@ footer strong { color: var(--cyan); }
 
   function render() {
     drawBackground();
+    drawBirds();
     drawTrack();
 
     obstacles.forEach(drawObstacle);
@@ -536,7 +604,7 @@ footer strong { color: var(--cyan); }
 
   function jump() {
     if (!running || !cat.onGround) return;
-    cat.vy = -14.5; // Ajustado para salto agradável
+    cat.vy = -13.8; 
     cat.onGround = false;
   }
 
@@ -546,10 +614,10 @@ footer strong { color: var(--cyan); }
     frame = 0;
     score = 0;
     speed = 7.5;
-    backgroundOffset = 0;
     floorOffset = 0;
     distanceToNext = 500;
     obstacles = [];
+    birds = [];
     accumulator = 0;
     lastTime = 0;
     gameOverSaved = false;
@@ -557,6 +625,7 @@ footer strong { color: var(--cyan); }
     cat.y = GROUND - cat.h;
     cat.vy = 0;
     cat.onGround = true;
+    cat.runFrame = 0;
 
     saveButton.disabled = true;
     startButton.textContent = '↻ REINICIAR';
@@ -584,69 +653,49 @@ footer strong { color: var(--cyan); }
 
   function spawnObstacle() {
     const type = Math.floor(Math.random() * 3);
-    
-    // Dimensões variadas para as caixas, cones e mochilas
-    const sizes = [
-      { w: 38, h: 38 }, 
-      { w: 34, h: 45 }, 
-      { w: 36, h: 40 }
-    ];
-    
+    const sizes = [{ w: 28, h: 32 }, { w: 24, h: 36 }, { w: 26, h: 38 }];
     const spec = sizes[type];
 
-    obstacles.push({
-      x: W + 20,
-      y: GROUND - spec.h,
-      w: spec.w,
-      h: spec.h,
-      type: type
-    });
-
-    // Varia a distância do próximo obstáculo com base na velocidade atual
-    const minDistance = 350;
-    const extraDistance = Math.random() * 300;
-    distanceToNext = minDistance + extraDistance;
+    obstacles.push({ x: W + 20, y: GROUND - spec.h, w: spec.w, h: spec.h, type: type });
+    distanceToNext = 300 + Math.random() * 250;
   }
 
   function intersects(a, b) {
-    // HITBOX AJUSTADA: 
-    // Como a imagem do gato JPEG tem espaço vazio ao redor, 
-    // reduzimos a zona de colisão drasticamente para ser justa.
-    const hitboxMarginX = 25; 
-    const hitboxMarginY = 15;
+    // Hitbox precisa calculada para saltos justos
+    const ax = a.x + 8;
+    const ay = a.y + 6;
+    const aw = a.w - 16;
+    const ah = a.h - 8;
 
-    const ax = a.x + hitboxMarginX;
-    const ay = a.y + hitboxMarginY;
-    const aw = a.w - (hitboxMarginX * 2);
-    const ah = a.h - hitboxMarginY;
+    const bx = b.x + 3;
+    const by = b.y + 3;
+    const bw = b.w - 6;
+    const bh = b.h - 4;
 
-    // Obstáculo hitbox (ligeiramente menor que o desenho também)
-    const bx = b.x + 5;
-    const by = b.y + 5;
-    const bw = b.w - 10;
-    const bh = b.h - 5;
-
-    return ax < bx + bw &&
-           ax + aw > bx &&
-           ay < by + bh &&
-           ay + ah > by;
+    return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
   }
 
   function update() {
     if (!running) return;
     frame++;
+    cat.runFrame++;
 
-    // Aumento gradual de velocidade
     speed = Math.min(13, 7.5 + frame / 800);
-
-    // Parallax: Fundo move BEM devagar, Chão move rápido
-    backgroundOffset += speed * 0.15; 
     floorOffset += speed;
-    
     score = Math.floor(frame / 4);
 
-    // Física
-    cat.vy += 0.7; // Gravidade
+    // Sistema de pássaros aleatórios no céu
+    if (Math.random() < 0.01 && birds.length < 4) {
+      birds.push({ x: W + 20, y: 30 + Math.random() * 100, offset: Math.floor(Math.random() * 10) });
+    }
+    birds.forEach(b => {
+      b.x -= speed * 0.4;
+      b.wing = (Math.floor(frame / 15) + b.offset) % 2;
+    });
+    birds = birds.filter(b => b.x > -20);
+
+    // Gravidade
+    cat.vy += 0.65; 
     cat.y += cat.vy;
 
     if (cat.y >= GROUND - cat.h) {
@@ -659,7 +708,7 @@ footer strong { color: var(--cyan); }
     if (distanceToNext <= 0) spawnObstacle();
 
     obstacles.forEach(o => o.x -= speed);
-    obstacles = obstacles.filter(o => o.x + o.w > -20);
+    obstacles = obstacles.filter(o => o.x + o.w > -40);
 
     for (const obstacle of obstacles) {
       if (intersects(cat, obstacle)) {
@@ -702,7 +751,6 @@ footer strong { color: var(--cyan); }
 
     scores.forEach((item, index) => {
       const li = document.createElement('li');
-      
       const rank = document.createElement('span');
       rank.className = 'rank-number';
       rank.textContent = ['🥇', '🥈', '🥉'][index] || (index + 1) + '.';
