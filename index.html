@@ -101,8 +101,11 @@ canvas {
   touch-action: manipulation;
 }
 
-.fullscreen-hud { display: none; }
+.fullscreen-hud {
+  display: none;
+}
 
+/* Somente a área do jogo entra em tela cheia. */
 .game-stage:fullscreen {
   width: 100vw;
   height: 100vh;
@@ -380,13 +383,9 @@ footer strong { color: var(--cyan); }
       <canvas id="game" width="960" height="400"
               aria-label="Jogo Joey Runner"></canvas>
     </div>
-
     <div class="fullscreen-hud">
-      <div class="hud-score">
-        PONTOS <strong id="fullScore">00000</strong>
-      </div>
-      <button id="exitFullscreen" type="button"
-              aria-label="Sair da tela cheia">SAIR ✕</button>
+      <div class="hud-score">PONTOS <strong id="fullScore">00000</strong></div>
+      <button id="exitFullscreen" type="button" aria-label="Sair da tela cheia">SAIR ✕</button>
     </div>
   </div>
 
@@ -404,8 +403,7 @@ footer strong { color: var(--cyan); }
   <div class="controls">
     <button id="start">▶ COMEÇAR</button>
     <button id="jump" class="jump-button">PULAR ↑</button>
-    <button id="fullscreenBtn" class="fullscreen-button"
-            type="button">⛶ TELA CHEIA</button>
+    <button id="fullscreenBtn" class="fullscreen-button" type="button">⛶ TELA CHEIA</button>
   </div>
 
   <p class="help">
@@ -456,6 +454,7 @@ footer strong { color: var(--cyan); }
   const CAT_X = 115;
   const STEP = 1000 / 60;
 
+  // Ajustes principais de dificuldade.
   const START_SPEED = 6.5;
   const MAX_SPEED = 10.5;
   const ACCELERATION = 0.0007;
@@ -474,8 +473,7 @@ footer strong { color: var(--cyan); }
   const rankingList = $('ranking');
   const message = $('message');
 
-  // IMAGEM DE FUNDO
-  // Mantenha Escola-otimizada.png na raiz do repositório GitHub.
+  // Imagens opcionais do repositório.
   const bgImg = new Image();
   let bgLoaded = false;
 
@@ -487,11 +485,9 @@ footer strong { color: var(--cyan); }
   bgImg.onerror = () => {
     bgLoaded = false;
     render();
-    message.textContent =
-      'Não foi possível carregar Escola-otimizada.png. Confira o nome do arquivo.';
   };
 
-  bgImg.src = 'Escola-otimizada.png';
+  bgImg.src = 'escola-fundo.png';
 
   function fmt(n) {
     return String(Math.floor(n)).padStart(5, '0');
@@ -548,6 +544,7 @@ footer strong { color: var(--cyan); }
   let lastTime = 0;
   let accumulator = 0;
   let gameOverSaved = false;
+  let animationId = 0;
 
   const cat = {
     x: CAT_X,
@@ -577,9 +574,8 @@ footer strong { color: var(--cyan); }
     ctx.fillText(str, x, y);
   }
 
-  // CENÁRIO CORRIGIDO
-  // A imagem ocupa toda a área acima da pista, como no código anterior.
-  // Não há recorte adicional nem cálculo de ampliação.
+  // CENÁRIO
+
   function drawBackground() {
     rect(0, 0, W, H, '#62c4f3');
 
@@ -659,7 +655,7 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // PERSONAGEM JOEY EM PIXEL ART
+  // JOEY: personagem desenhado em pixel art.
 
   function drawJoey() {
     const x = Math.round(cat.x);
@@ -689,7 +685,7 @@ footer strong { color: var(--cyan); }
     rect(x + 3, y + 25, 5, 12, '#d88a39');
     rect(x + 36, y + 25, 5, 12, '#d88a39');
 
-    // Olhos.
+    // Olhos verdes.
     rect(x + 8, y + 19, 12, 13, '#ffffff');
     rect(x + 25, y + 19, 12, 13, '#ffffff');
     rect(x + 12, y + 21, 7, 9, '#12a344');
@@ -705,7 +701,7 @@ footer strong { color: var(--cyan); }
     rect(x + 17, y + 37, 11, 4, '#713d35');
     rect(x + 20, y + 38, 5, 2, '#ffffff');
 
-    // Camiseta.
+    // Camiseta da escola.
     rect(x + 8, y + 44, 29, 21, '#f7f7ef');
     rect(x + 8, y + 44, 29, 4, '#168bd0');
     rect(x + 8, y + 49, 4, 13, '#188bd0');
@@ -713,7 +709,7 @@ footer strong { color: var(--cyan); }
     rect(x + 19, y + 50, 8, 6, '#152749');
     rect(x + 21, y + 50, 4, 4, '#35d8cc');
 
-    // Braços.
+    // Braços alternados.
     if (pose === 0) {
       rect(x + 1, y + 47, 8, 12, '#f5a340');
       rect(x - 1, y + 57, 9, 6, '#ffba58');
@@ -765,32 +761,43 @@ footer strong { color: var(--cyan); }
     ctx.globalAlpha = 1;
 
     if (o.type === 0) {
+      // Caixa de papelão.
       rect(o.x, o.y, o.w, o.h, '#8a5c36');
       rect(o.x + 3, o.y + 3, o.w - 6, o.h - 6, '#b07c4a');
       rect(o.x + 3, o.y + o.h / 2, o.w - 6, 3, '#734a29');
       rect(o.x + o.w / 2 - 2, o.y + 3, 4, o.h - 6, '#d7a66a');
+
     } else if (o.type === 1) {
+      // Cone de trânsito.
       rect(o.x + o.w / 2 - 3, o.y, 6, 5, '#ffdf72');
       rect(o.x + 5, o.y + 5, o.w - 10, o.h - 10, '#f6a32c');
       rect(o.x + 8, o.y + 15, o.w - 16, 5, '#ffffff');
       rect(o.x, o.y + o.h - 6, o.w, 6, '#d86e27');
+
     } else if (o.type === 2) {
+      // Mochila.
       rect(o.x + 3, o.y + 8, o.w - 6, o.h - 8, '#e94d78');
       rect(o.x + 7, o.y + 12, o.w - 14, o.h - 18, '#ff7da0');
       rect(o.x + 7, o.y + 3, o.w - 14, 8, '#f6a3bc');
       rect(o.x + o.w / 2 - 3, o.y + 17, 6, 7, '#ffd166');
+
     } else if (o.type === 3) {
+      // Livros empilhados.
       rect(o.x, o.y + 15, o.w, 10, '#2478bd');
       rect(o.x + 3, o.y + 17, o.w - 6, 3, '#d7efff');
       rect(o.x + 4, o.y + 5, o.w - 4, 10, '#e94d78');
       rect(o.x + 7, o.y + 7, o.w - 10, 3, '#ffe6a8');
       rect(o.x + 2, o.y, o.w - 5, 5, '#ffcf59');
+
     } else if (o.type === 4) {
+      // Lixeira escolar.
       rect(o.x + 3, o.y + 6, o.w - 6, o.h - 6, '#4b90d2');
       rect(o.x, o.y + 4, o.w, 5, '#9cd8ff');
       rect(o.x + 6, o.y + 13, 3, o.h - 17, '#bcefff');
       rect(o.x + o.w - 9, o.y + 13, 3, o.h - 17, '#bcefff');
+
     } else {
+      // Pilha de cadernos.
       rect(o.x, o.y + 17, o.w, o.h - 17, '#32a88d');
       rect(o.x + 3, o.y + 20, o.w - 6, 3, '#c5fff0');
       rect(o.x + 3, o.y + 5, o.w - 6, 13, '#7359bc');
@@ -798,6 +805,8 @@ footer strong { color: var(--cyan); }
       rect(o.x + 5, o.y, o.w - 10, 5, '#ffcf59');
     }
   }
+
+  // INTERFACE DENTRO DO JOGO
 
   function drawOverlay(title, subtitle) {
     ctx.fillStyle = 'rgba(11, 17, 32, .78)';
@@ -833,7 +842,7 @@ footer strong { color: var(--cyan); }
     }
   }
 
-  // PULO
+  // FÍSICA DO PULO
 
   function jump() {
     if (!running || !cat.onGround) return;
@@ -842,7 +851,7 @@ footer strong { color: var(--cyan); }
     cat.onGround = false;
   }
 
-  // OBSTÁCULOS
+  // OBSTÁCULOS E DISTÂNCIAS
 
   function randomBetween(min, max) {
     return min + Math.random() * (max - min);
@@ -887,11 +896,7 @@ footer strong { color: var(--cyan); }
         obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
 
       const pairGap = randomBetween(75, 115);
-
-      obstacles.push(
-        createObstacle(W + 25 + first.w + pairGap, second)
-      );
-
+      obstacles.push(createObstacle(W + 25 + first.w + pairGap, second));
       distanceToNext += first.w + pairGap;
     }
 
@@ -929,7 +934,7 @@ footer strong { color: var(--cyan); }
     );
   }
 
-  // INICIAR OU REINICIAR
+  // INICIAR OU REINICIAR A PARTIDA
 
   function start() {
     running = true;
@@ -941,15 +946,16 @@ footer strong { color: var(--cyan); }
     distanceToNext = 370;
     obstacles = [];
     birds = [];
-    accumulator = 0;
-    lastTime = 0;
-    gameOverSaved = false;
 
     clouds = [
       { x: 70, y: 45, speed: 0.45 },
       { x: 420, y: 75, speed: 0.30 },
       { x: 760, y: 35, speed: 0.38 }
     ];
+
+    accumulator = 0;
+    lastTime = 0;
+    gameOverSaved = false;
 
     cat.y = GROUND - cat.h;
     cat.vy = 0;
@@ -964,6 +970,8 @@ footer strong { color: var(--cyan); }
 
     render();
   }
+
+  // FIM DA PARTIDA
 
   function finish() {
     if (!running) return;
@@ -984,7 +992,7 @@ footer strong { color: var(--cyan); }
     render();
   }
 
-  // ATUALIZAÇÃO DA PARTIDA
+  // ATUALIZAÇÃO DA FÍSICA
 
   function update() {
     if (!running) return;
@@ -1002,7 +1010,10 @@ footer strong { color: var(--cyan); }
 
     for (const c of clouds) {
       c.x -= c.speed;
-      if (c.x < -100) c.x = W + 30;
+
+      if (c.x < -100) {
+        c.x = W + 30;
+      }
     }
 
     if (Math.random() < 0.012 && birds.length < 5) {
@@ -1056,7 +1067,9 @@ footer strong { color: var(--cyan); }
   // LOOP DE ANIMAÇÃO
 
   function loop(timestamp) {
-    if (!lastTime) lastTime = timestamp;
+    if (!lastTime) {
+      lastTime = timestamp;
+    }
 
     const delta = Math.min(timestamp - lastTime, 50);
     lastTime = timestamp;
@@ -1078,7 +1091,7 @@ footer strong { color: var(--cyan); }
     }
 
     render();
-    requestAnimationFrame(loop);
+    animationId = requestAnimationFrame(loop);
   }
 
   // RANKING LOCAL
@@ -1145,17 +1158,18 @@ footer strong { color: var(--cyan); }
     gameOverSaved = true;
     saveButton.disabled = true;
     showRanking();
-    message.textContent = 'Pontuação registrada neste navegador!';
+
+    message.textContent =
+      'Pontuação registrada neste navegador!';
   });
 
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
 
-  // TOQUE OU CLIQUE NO JOGO
-  // Antes de começar: inicia.
-  // Durante a partida: pula.
-  // Depois de perder: reinicia.
-
+  // CLIQUE OU TOQUE NA ÁREA DO JOGO:
+  // - antes de começar: inicia;
+  // - durante a partida: pula;
+  // - depois de perder: reinicia imediatamente.
   canvas.addEventListener('pointerdown', event => {
     event.preventDefault();
 
@@ -1166,6 +1180,7 @@ footer strong { color: var(--cyan); }
     }
   });
 
+  // CONTROLES DO TECLADO
   window.addEventListener('keydown', event => {
     if (
       event.code === 'Space' ||
@@ -1189,7 +1204,7 @@ footer strong { color: var(--cyan); }
     }
   });
 
-  // TELA CHEIA EXCLUSIVA DO JOGO
+  // TELA CHEIA SOMENTE PARA O JOGO
 
   async function enterGameFullscreen() {
     try {
@@ -1206,11 +1221,12 @@ footer strong { color: var(--cyan); }
 
       await gameStage.requestFullscreen();
 
+      // O bloqueio de orientação depende do navegador e do dispositivo.
       if (screen.orientation && screen.orientation.lock) {
         try {
           await screen.orientation.lock('landscape');
         } catch (_) {
-          // O bloqueio depende do suporte do dispositivo.
+          // Alguns navegadores não permitem bloquear a orientação.
         }
       }
     } catch (_) {
@@ -1225,7 +1241,9 @@ footer strong { color: var(--cyan); }
     if (document.fullscreenElement) {
       try {
         await document.exitFullscreen();
-      } catch (_) {}
+      } catch (_) {
+        // O navegador pode impedir a saída programática.
+      }
     }
 
     if (screen.orientation && screen.orientation.unlock) {
@@ -1251,7 +1269,12 @@ footer strong { color: var(--cyan); }
 
   showRanking();
   render();
-  requestAnimationFrame(loop);
+
+  if (animationId) {
+    cancelAnimationFrame(animationId);
+  }
+
+  animationId = requestAnimationFrame(loop);
 })();
 </script>
 </body>
