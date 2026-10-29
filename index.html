@@ -474,11 +474,8 @@ footer strong { color: var(--cyan); }
   const rankingList = $('ranking');
   const message = $('message');
 
-  /*
-    NOVO FUNDO:
-    O arquivo Escola-otimizada.png deve estar na raiz do GitHub.
-    O nome diferencia maiúsculas e minúsculas.
-  */
+  // IMAGEM DE FUNDO
+  // Mantenha Escola-otimizada.png na raiz do repositório GitHub.
   const bgImg = new Image();
   let bgLoaded = false;
 
@@ -580,42 +577,14 @@ footer strong { color: var(--cyan); }
     ctx.fillText(str, x, y);
   }
 
-  // CENÁRIO COM A NOVA IMAGEM DE FUNDO
-
+  // CENÁRIO CORRIGIDO
+  // A imagem ocupa toda a área acima da pista, como no código anterior.
+  // Não há recorte adicional nem cálculo de ampliação.
   function drawBackground() {
     rect(0, 0, W, H, '#62c4f3');
 
     if (bgLoaded && bgImg.naturalWidth > 0) {
-      /*
-        Preenche a área do cenário preservando a proporção
-        da imagem, evitando distorções.
-      */
-      const imageRatio = bgImg.naturalWidth / bgImg.naturalHeight;
-      const areaRatio = W / (GROUND + 18);
-
-      let drawW;
-      let drawH;
-      let drawX;
-      let drawY;
-
-      if (imageRatio > areaRatio) {
-        drawH = GROUND + 18;
-        drawW = drawH * imageRatio;
-        drawX = (W - drawW) / 2;
-        drawY = 0;
-      } else {
-        drawW = W;
-        drawH = W / imageRatio;
-        drawX = 0;
-        drawY = 0;
-      }
-
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, W, GROUND + 18);
-      ctx.clip();
-      ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
-      ctx.restore();
+      ctx.drawImage(bgImg, 0, 0, W, GROUND + 18);
     } else {
       drawFallbackSchool();
     }
@@ -1182,12 +1151,11 @@ footer strong { color: var(--cyan); }
   startButton.addEventListener('click', start);
   jumpButton.addEventListener('click', jump);
 
-  /*
-    TOQUE OU CLIQUE NO JOGO:
-    Antes de começar: inicia a partida.
-    Durante a partida: pula.
-    Depois de perder: reinicia imediatamente.
-  */
+  // TOQUE OU CLIQUE NO JOGO
+  // Antes de começar: inicia.
+  // Durante a partida: pula.
+  // Depois de perder: reinicia.
+
   canvas.addEventListener('pointerdown', event => {
     event.preventDefault();
 
